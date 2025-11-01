@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Canvas → Texto (Tesseract.js)</title>
+<style>
+  body { font-family: Arial, sans-serif; display:flex; gap:20px; padding:20px; flex-wrap:wrap; }
+  #drawing { border:1px solid #aaa; touch-action: none; background:#fff; }
+  .controls { display:flex; flex-direction:column; gap:8px; max-width:400px; }
+  button { padding:8px 12px; cursor:pointer; }
+  pre { white-space:pre-wrap; background:#f6f6f6; padding:10px; border-radius:6px; min-height:100px; }
+  img.preview { border:1px solid #ccc; max-width:300px; margin-top:10px; border-radius:4px; }
+</style>
+</head>
+<body>
+  <canvas id="drawing" width="600" height="200"></canvas>
+  <div class="controls">
+    <div>
+      <button id="clearBtn">Borrar</button>
+      <button id="recognizeBtn">Reconocer texto</button>
+      <label><input id="invert" type="checkbox"> Invertir (fondo blanco)</label>
+    </div>
+    <div>
+      <strong>Resultado:</strong>
+      <pre id="result">(aún no reconocido)</pre>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
+  <script>
+  // ===== Dibujo en el canvas =====
+  const canvas = document.getElementById('drawing');
+  const ctx = canvas.getContext('2d');
+  ctx.lineWidth = 12;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#000';
+
+  let drawing = false;
+  function posFromEvent(e) {
+    const rect = canvas.getBoundingClientRect();
+    if (e.touches) e = e.touches[0];
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    drawing = true;
+    const p = posFromEvent(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drawing) return;
+    const p = posFromEvent(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+  });
+
+  window.addEventListener('pointerup', () => drawing = false);
+
+  // ===== Botón limpiar =====
+  document.getElementById('clearBtn').onclick = () => {
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#000';
+    document.getElementById('result').textContent = '(aún no reconocido)';
+  };
+
+  // Fondo blanco inicial
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // ===== Preprocesamiento =====
+  function preprocessCanvas(invert = false) {
+    const tmp = document.createElement('canvas');
+    const w = 1200; // mayor resolución
+    tmp.width = w;
+    tmp.height = Math.round(w * canvas.height / canvas.width);
+    const tctx = tmp.getContext('2d');
+
+    // Copiar y escalar
+    tctx.drawImage(canvas, 0, 0, tmp.width, tmp.height);
+
+    // Blanco y negro binario
+    const img = tctx.getImageData(0, 0, tmp.width, tmp.height);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2];
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+      const thr = 180;
+      let val = gray > thr ? 255 : 0;
+      if (invert) val = 255 - val;
+      d[i] = d[i + 1] = d[i + 2] = val;
+    }
+    tctx.putImageData(img, 0, 0);
+    return tmp.toDataURL('image/png');
+  }
+
+  // ===== OCR =====
+  const resultEl = document.getElementById('result');
+  document.getElementById('recognizeBtn').onclick = async () => {
+    resultEl.textContent = ' Cargando OCR...';
+    const invert = document.getElementById('invert').checked;
+    const dataURL = preprocessCanvas(invert);
+
+    // Mostrar imagen procesada
+    const oldPrev = document.querySelector('img.preview');
+    if (oldPrev) oldPrev.remove();
+    const imgPrev = new Image();
+    imgPrev.src = dataURL;
+    imgPrev.className = 'preview';
+    document.body.appendChild(imgPrev);
+
+    try {
+      const worker = await Tesseract.createWorker({
+        logger: m => {
+          if (m.status && m.progress) {
+            resultEl.textContent = `${m.status} ${(m.progress * 100).toFixed(0)}%`;
+          }
+        }
+      });
+
+      await worker.loadLanguage('eng');  
+      await worker.initialize('eng');
+      console.log('Idioma cargado correctamente.');
+
+      const { data: { text } } = await worker.recognize(dataURL);
+      await worker.terminate();
+
+      if (text.trim()) {
+        resultEl.textContent = 'Texto detectado:\n\n' + text.trim();
+      } else {
+        resultEl.textContent = 'No se detectó texto.';
+      }
+
+    } catch (err) {
+      console.error(err);
+      resultEl.textContent = 'Error en OCR: ' + (err.message || 'Error desconocido');
+    }
+  };
+  </script>
+</body>
+</html>

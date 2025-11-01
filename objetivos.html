@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Objetivos — Fundamentos de Programación · IA</title>
+<meta name="color-scheme" content="dark light" />
+<style>
+  :root{
+    --bg:#0a0f14; --bg2:#0e1521; --card:#121a26;
+    --fg:#e6f3ff; --muted:#a7b4c6;
+    --primary:#7dd3fc; --accent:#a78bfa; --ok:#34d399;
+    --border:rgba(255,255,255,.14); --glass:rgba(255,255,255,.06);
+    --shadow:0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(124,58,237,.25);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f6f9ff; --bg2:#eef4ff; --card:#ffffff; --fg:#0d1320; --muted:#576176;
+      --border:rgba(0,0,0,.12); --glass:rgba(0,0,0,.04);
+      --shadow:0 10px 30px rgba(0,0,0,.08), 0 0 24px rgba(124,58,237,.12);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--fg);
+    background:
+      radial-gradient(1200px 600px at 8% 8%, var(--bg2) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 92% 92%, var(--bg2) 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, #0a0e16 100%);
+    font: 16px/1.55 ui-sans-serif, system-ui, Segoe UI, Inter, Roboto, Arial;
+  }
+  .wrap{max-width:1100px; margin:0 auto; padding:20px; display:grid; gap:16px}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+  .brand{display:flex; align-items:center; gap:10px}
+  .badge{border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:12px; color:var(--primary)}
+  .sub{color:var(--muted)}
+  .btn{
+    border:1px solid var(--border); background:var(--glass); color:var(--fg);
+    padding:8px 12px; border-radius:10px; cursor:pointer; transition:.15s; user-select:none
+  }
+  .btn:hover{border-color:rgba(255,255,255,.32)}
+  .grid{display:grid; grid-template-columns: 1fr; gap:16px}
+  .cards{display:grid; grid-template-columns: repeat(12,1fr); gap:14px}
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); overflow:hidden;
+    opacity:0; transform:translateY(10px); animation:pop .5s ease forwards;
+  }
+  .card:nth-child(1){animation-delay:.05s}
+  .card:nth-child(2){animation-delay:.1s}
+  .card:nth-child(3){animation-delay:.15s}
+  @keyframes pop{to{opacity:1; transform:translateY(0)}}
+
+  .card h2{margin:0; padding:14px 16px; border-bottom:1px solid var(--border); font-size:1.06rem}
+  .content{padding:14px 16px}
+
+  /* Objetivo general */
+  .og{
+    display:grid; grid-template-columns: 1fr .45fr; gap:14px;
+  }
+  @media (max-width: 900px){ .og{grid-template-columns:1fr} }
+
+  .og .text{
+    border:1px solid var(--border); border-radius:14px; padding:12px; background:var(--glass)
+  }
+  .og .meter{
+    border:1px solid var(--border); border-radius:14px; padding:12px;
+    display:grid; grid-template-columns: 120px 1fr; gap:12px; align-items:center; background:var(--glass)
+  }
+  .ring{
+    width:110px; height:110px; border-radius:50%;
+    background: conic-gradient(var(--accent) 0deg, rgba(255,255,255,.12) 0deg);
+    position:relative; display:grid; place-items:center;
+    transition: transform .25s ease;
+  }
+  .ring:hover{ transform: scale(1.03) }
+  .ring::after{
+    content:""; position:absolute; width:78px; height:78px; border-radius:50%;
+    background:var(--bg); box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .ring span{position:absolute; font-weight:700}
+
+  .muted{color:var(--muted)}
+
+  /* Objetivos específicos */
+  .tile{grid-column: span 6; border:1px solid var(--border); border-radius:14px; background:var(--glass); padding:12px;
+    transition: transform .15s ease, background .2s ease, border-color .2s ease;
+    opacity:0; transform:translateY(8px); animation:pop .5s ease forwards;
+  }
+  .tile:hover{ transform: translateY(-3px); background:rgba(167,139,250,.08); border-color:rgba(167,139,250,.35) }
+  .tile h3{margin:.2rem 0 .35rem; font-size:1rem}
+  .meta{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px}
+  .pill{display:inline-block; border:1px solid var(--border); background:var(--glass); padding:4px 8px; border-radius:999px; font-size:.9rem}
+  .ok{color:var(--ok)}
+
+  /* checklist */
+  .chk{display:flex; gap:10px; align-items:flex-start}
+  .chk input{accent-color: var(--accent); transform:scale(1.05); margin-top:3px}
+  .strike{opacity:.75; text-decoration: line-through}
+
+  /* barra progreso */
+  .progress{height:10px; border-radius:999px; border:1px solid var(--border); background:var(--glass); overflow:hidden}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--primary), var(--accent)); transition: width .25s ease}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="badge">Objetivos</span>
+        <span class="sub">IA generativa · Fundamentos de Programación</span>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button class="btn" onclick="history.back()">↩ Volver</button>
+        <button class="btn" id="copyBtn">📋 Copiar</button>
+        <button class="btn" id="ttsBtn">🔊 Escuchar</button>
+      </div>
+    </header>
+
+    <!-- Objetivo general -->
+    <section class="card" style="animation-delay:.05s">
+      <h2>Objetivo general</h2>
+      <div class="content og">
+        <div class="text" id="ogText">
+          Determinar el uso de la <strong>inteligencia artificial generativa</strong> para el aprendizaje de
+          <em>fundamentos de la programación</em>, con el fin de establecer su <strong>factibilidad</strong> en el
+          contexto de <strong>Colombia</strong>, tomando como eje el periodo <strong>2020–2025</strong>.
+          <div class="muted" style="margin-top:8px">Foco: factibilidad · contexto Colombia · horizonte temporal 2020–2025</div>
+        </div>
+        <div class="meter">
+          <div class="ring" id="ring" title="Avance estimado según checklist de objetivos específicos">
+            <span id="pct">0%</span>
+          </div>
+          <div>
+            <div class="muted" style="margin-bottom:6px">Avance (objetivos específicos marcados)</div>
+            <div class="progress"><div class="bar" id="bar"></div></div>
+            <div class="muted" id="count" style="margin-top:6px">0 / 6 completados</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Objetivos específicos -->
+    <section class="card" style="animation-delay:.1s">
+      <h2>3.2 Objetivos específicos</h2>
+      <div class="content">
+        <div class="cards" id="objGrid">
+          <div class="tile" style="animation-delay:.1s">
+            <h3>OE1 · Estado del uso 2020–2025</h3>
+            <div class="meta"><span class="pill">Global + Colombia</span><span class="pill">Revisión</span></div>
+            <label class="chk"><input type="checkbox" /> <span>Describir el estado actual del uso de IA generativa en la enseñanza de los fundamentos de la programación (2020–2025).</span></label>
+          </div>
+
+          <div class="tile" style="animation-delay:.12s">
+            <h3>OE2 · Modelos y herramientas</h3>
+            <div class="meta"><span class="pill">LLMs · Copilot · Chatbots</span><span class="pill">Metodologías</span></div>
+            <label class="chk"><input type="checkbox" /> <span>Definir los principales modelos, herramientas y metodologías aplicadas a la enseñanza de la programación.</span></label>
+          </div>
+
+          <div class="tile" style="animation-delay:.14s">
+            <h3>OE3 · Beneficios y riesgos</h3>
+            <div class="meta"><span class="pill">Evidencia previa</span><span class="pill">Ética</span></div>
+            <label class="chk"><input type="checkbox" /> <span>Analizar beneficios, limitaciones y riesgos reportados en estudios previos.</span></label>
+          </div>
+
+          <div class="tile" style="animation-delay:.16s">
+            <h3>OE4 · Comparación regional</h3>
+            <div class="meta"><span class="pill">PE · EC · CL</span><span class="pill">Cross-case</span></div>
+            <label class="chk"><input type="checkbox" /> <span>Comparar experiencias y resultados de Colombia con países de contextos similares.</span></label>
+          </div>
+
+          <div class="tile" style="animation-delay:.18s">
+            <h3>OE5 · Factibilidad en Colombia</h3>
+            <div class="meta"><span class="pill">Infraestructura</span><span class="pill">Aceptación</span></div>
+            <label class="chk"><input type="checkbox" /> <span>Interpretar la factibilidad de incorporar IA generativa como apoyo en el proceso de enseñanza-aprendizaje.</span></label>
+          </div>
+
+          <div class="tile" style="animation-delay:.2s">
+            <h3>OE6 · Lineamientos y recomendaciones</h3>
+            <div class="meta"><span class="pill">Guía</span><span class="pill">Pilotos</span></div>
+            <label class="chk"><input type="checkbox" /> <span>Establecer conclusiones y proponer lineamientos para futuros proyectos educativos en el país.</span></label>
+          </div>
+        </div>
+        <div class="muted" style="margin-top:10px"></div>
+      </div>
+    </section>
+  </div>
+
+<script>
+/* ===== Animaciones iniciales (stagger ya aplicado por nth/inline delays) ===== */
+
+/* ===== Checklist → progreso ===== */
+const checks = document.querySelectorAll('#objGrid input[type="checkbox"]');
+const bar = document.getElementById('bar');
+const pct = document.getElementById('pct');
+const count = document.getElementById('count');
+const ring = document.getElementById('ring');
+const KEY = 'objetivos_checks_v1';
+
+function loadState(){
+  try{
+    const s = JSON.parse(localStorage.getItem(KEY)||'[]');
+    checks.forEach((c,i)=> c.checked = !!s[i]);
+    syncUI();
+  }catch{ /* ignore */ }
+}
+function saveState(){
+  const s = [...checks].map(c=> c.checked ? 1 : 0);
+  localStorage.setItem(KEY, JSON.stringify(s));
+}
+
+function syncUI(){
+  const total = checks.length;
+  const done = [...checks].filter(c=> c.checked).length;
+  const p = Math.round((done/total)*100);
+  // barra
+  bar.style.width = p + '%';
+  pct.textContent = p + '%';
+  count.textContent = `${done} / ${total} completados`;
+  // anillo
+  const deg = p * 3.6;
+  ring.style.background = `conic-gradient(var(--accent) 0deg ${deg}deg, rgba(255,255,255,.12) ${deg}deg 360deg)`;
+  // strike text
+  checks.forEach(ch=>{
+    ch.nextElementSibling.classList.toggle('strike', ch.checked);
+  });
+}
+checks.forEach(ch=>{
+  ch.addEventListener('change', ()=>{ saveState(); syncUI(); });
+});
+
+loadState();
+
+/* ===== Copiar & TTS ===== */
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  const txt = `Objetivo general:
+Determinar el uso de la IA generativa para el aprendizaje de fundamentos de la programación y su factibilidad en Colombia (2020–2025).
+
+Objetivos específicos:
+1) Estado del uso 2020–2025 (global+Colombia)
+2) Modelos, herramientas y metodologías
+3) Beneficios, limitaciones y riesgos
+4) Comparación regional
+5) Factibilidad en Colombia
+6) Lineamientos y recomendaciones`;
+  try{ await navigator.clipboard.writeText(txt); toast('Copiado ✅'); }
+  catch{ toast('No se pudo copiar 😅'); }
+});
+
+document.getElementById('ttsBtn').addEventListener('click', ()=>{
+  const u = new SpeechSynthesisUtterance(
+    'Objetivo general: determinar el uso de la inteligencia artificial generativa para el aprendizaje de fundamentos de la programación y su factibilidad en Colombia, entre dos mil veinte y dos mil veinticinco. '+
+    'Objetivos específicos: estado del uso; modelos y herramientas; beneficios y riesgos; comparación regional; factibilidad; y lineamientos para futuros proyectos.'
+  );
+  u.lang = 'es-ES';
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+});
+
+/* ===== Toast ===== */
+function toast(msg){
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed; bottom:16px; left:50%; transform:translateX(-50%); padding:8px 12px; border:1px solid var(--border); background:var(--glass); border-radius:10px; backdrop-filter:blur(6px); z-index:9999';
+  document.body.appendChild(t); setTimeout(()=> t.remove(), 1400);
+}
+</script>
+</body>
+</html>

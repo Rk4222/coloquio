@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Evidencia dinámica — IA en Fundamentos de Programación</title>
+<meta name="color-scheme" content="dark light" />
+<style>
+  :root{
+    --bg:#0a0f14; --bg2:#0e1521; --card:#121a26;
+    --fg:#e6f3ff; --muted:#a7b4c6;
+    --primary:#7dd3fc; --accent:#a78bfa; --ok:#34d399; --warn:#fbbf24; --err:#ff6961;
+    --border:rgba(255,255,255,.14); --glass:rgba(255,255,255,.06);
+    --shadow:0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(124,58,237,.25);
+    --row:#0f1623; --hover:rgba(167,139,250,.12);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f6f9ff; --bg2:#eef4ff; --card:#ffffff; --fg:#0d1320; --muted:#576176;
+      --border:rgba(0,0,0,.12); --glass:rgba(0,0,0,.04); --row:#ffffff; --hover:rgba(167,139,250,.16);
+      --shadow:0 10px 30px rgba(0,0,0,.08), 0 0 24px rgba(124,58,237,.12);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--fg);
+    background:
+      radial-gradient(1200px 600px at 8% 8%, var(--bg2) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 92% 92%, var(--bg2) 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, #0a0e16 100%);
+    font: 15.5px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, "Helvetica Neue", Arial;
+  }
+  .wrap{max-width:1200px; margin:0 auto; padding:18px; display:grid; gap:16px}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+  .brand{display:flex; align-items:center; gap:10px}
+  .badge{border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:12px; color:var(--primary)}
+  .sub{color:var(--muted)}
+  .btn,.chip{
+    border:1px solid var(--border); background:var(--glass); color:var(--fg);
+    padding:7px 10px; border-radius:10px; cursor:pointer; user-select:none; transition:.15s;
+  }
+  .btn:hover,.chip:hover{border-color:rgba(255,255,255,.32)}
+  .chipbar{display:flex; gap:8px; flex-wrap:wrap}
+  .chip.active{outline:2px solid var(--accent)}
+  .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:16px}
+  @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+
+  .card{
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .card h2{margin:0; padding:14px 16px; border-bottom:1px solid var(--border); font-size:1.06rem}
+  .content{padding:14px 16px}
+  .muted{color:var(--muted)}
+  .row{display:grid; gap:10px}
+  .pill{display:inline-block; border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:999px; margin:0 6px 6px 0}
+
+  /* Mosaico de tarjetas */
+  .cards{display:grid; grid-template-columns:repeat(12,1fr); gap:12px}
+  .tile{
+    grid-column: span 6; min-height:130px; border:1px solid var(--border); border-radius:14px; background:var(--row);
+    padding:12px; display:flex; flex-direction:column; gap:8px; transition:.15s;
+  }
+  .tile:hover{background:var(--hover)}
+  .tile.small{grid-column: span 4}
+  .tile.wide{grid-column: span 12}
+  @media (max-width: 900px){
+    .tile{grid-column: span 12}
+    .tile.small{grid-column: span 12}
+  }
+  .t-head{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .t-title{font-weight:700}
+  .t-note{font-size:.92rem; color:var(--muted)}
+
+  /* Donut y barras */
+  .meter{
+    width:90px; height:90px; border-radius:50%;
+    background: conic-gradient(var(--accent) 0deg, var(--accent) 0deg, rgba(255,255,255,.12) 0deg);
+    display:grid; place-items:center; position:relative;
+  }
+  .meter::after{
+    content:""; position:absolute; width:64px; height:64px; border-radius:50%;
+    background: var(--bg); box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .meter span{position:absolute; font-weight:700}
+  .bar{
+    height:12px; border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+    border:1px solid var(--border); overflow:hidden;
+  }
+  .bar > i{
+    display:block; height:100%; width:0%;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+  }
+
+  /* Tabla mini */
+  table{width:100%; border-collapse:separate; border-spacing:0; border:1px solid var(--border); border-radius:12px; overflow:hidden}
+  thead th{background:linear-gradient(180deg, rgba(167,139,250,.18), rgba(167,139,250,.06)); text-align:left; padding:8px 10px; border-bottom:1px solid var(--border)}
+  tbody td{padding:8px 10px; border-bottom:1px solid rgba(255,255,255,.06)}
+  tbody tr:nth-child(odd){background:var(--row)}
+  tbody tr:hover{background:var(--hover)}
+  .right{text-align:right}
+
+  .note{font-size:.92rem; color:var(--muted)}
+  .tip{border-bottom:1px dotted currentColor; cursor:help}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="badge">Evidencia dinámica</span>
+        <span class="sub">IA generativa en la enseñanza de Fundamentos de Programación</span>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button class="btn" onclick="history.back()">↩ Volver</button>
+        <button class="btn" id="toggle">👁️ Vista: Texto</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Categorías</h2>
+      <div class="content">
+        <div class="chipbar" id="chips">
+          <div class="chip active" data-cat="desafios">Desafíos</div>
+          <div class="chip active" data-cat="ia-apoyo">IA como apoyo</div>
+          <div class="chip active" data-cat="evidencia-global">Evidencia global</div>
+          <div class="chip active" data-cat="perfiles-uso">Perfiles de uso</div>
+          <div class="chip active" data-cat="colombia">Evidencia en Colombia</div>
+          <div class="chip active" data-cat="riesgos">Riesgos/consideraciones</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="grid">
+      <!-- Columna principal: mosaico dinámico -->
+      <section class="card">
+        <h2>Resumen visual</h2>
+        <div class="content">
+          <div class="cards" id="cards">
+            <!-- DESAFÍOS -->
+            <div class="tile" data-cat="desafios">
+              <div class="t-head">
+                <div class="t-title">Naturaleza abstracta + lógica + algoritmos</div>
+                <span class="pill">Hurtado et al., 2024</span>
+              </div>
+              <div class="t-note">Conceptos abstractos + habilidades lógico-matemáticas + diseño algorítmico dificultan el inicio.</div>
+              <div class="bar" title="Dificultad percibida (estimación cualitativa alta)">
+                <i style="width:78%"></i>
+              </div>
+            </div>
+            <div class="tile" data-cat="desafios">
+              <div class="t-head">
+                <div class="t-title">Menos feedback y grupos masivos</div>
+                <span class="pill">Terán, 2023</span>
+              </div>
+              <div class="t-note">Despersonalización → desmotivación → riesgo de abandono.</div>
+              <div class="bar" title="Riesgo de desmotivación (estimación cualitativa)">
+                <i style="width:65%"></i>
+              </div>
+            </div>
+
+            <!-- IA como apoyo -->
+            <div class="tile" data-cat="ia-apoyo">
+              <div class="t-head">
+                <div class="t-title">IA generativa como tutor inmediato</div>
+                <span class="pill">Denny et al., 2024</span>
+              </div>
+              <div class="t-note">Ejemplos personalizados, corrección instantánea, asistencia interactiva.</div>
+              <div class="bar" title="Potencial de apoyo percibido">
+                <i style="width:85%"></i>
+              </div>
+            </div>
+
+            <!-- Evidencia global -->
+            <div class="tile small" data-cat="evidencia-global">
+              <div class="t-head">
+                <div class="t-title">Uso de IA en estudiantes</div>
+                <span class="pill">Phung et al., 2023</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px">
+                <div class="meter" data-pct="80" title="80% de 231 estudiantes usó IA para tareas de codificación">
+                  <span>80%</span>
+                </div>
+                <div class="t-note">Muestra: 231 estudiantes · 80% usa IA para programar.</div>
+              </div>
+            </div>
+            <div class="tile small" data-cat="evidencia-global">
+              <div class="t-head">
+                <div class="t-title">Uso excesivo vs. rendimiento</div>
+                <span class="pill">Phung et al., 2023</span>
+              </div>
+              <div class="t-note">El uso excesivo se correlacionó negativamente con el rendimiento (no es %; señal de alerta).</div>
+              <div class="bar" title="Señal de riesgo por sobreuso">
+                <i style="width:40%"></i>
+              </div>
+            </div>
+            <div class="tile" data-cat="evidencia-global">
+              <div class="t-head">
+                <div class="t-title">Mejoras con uso guiado</div>
+                <span class="pill">Kazemitabaar et al., 2023</span>
+              </div>
+              <div class="t-note">Mejoras en pensamiento computacional y autoeficacia cuando la IA se usa con guía.</div>
+              <div class="bar" title="Impacto con guía (alto)">
+                <i style="width:82%"></i>
+              </div>
+            </div>
+
+            <!-- Perfiles de uso -->
+            <div class="tile" data-cat="perfiles-uso">
+              <div class="t-head">
+                <div class="t-title">Perfiles de interacción</div>
+                <span class="pill">Borrego et al., 2023</span>
+              </div>
+              <div class="t-note">“Refinador de código” (experiencia alta) vs. “solución directa” (experiencia baja) → riesgo de dependencia.</div>
+              <table>
+                <thead><tr><th>Perfil</th><th>Patrón</th><th>Riesgo</th></tr></thead>
+                <tbody>
+                  <tr><td>Refinador</td><td>Itera y mejora</td><td>Bajo</td></tr>
+                  <tr><td>Solución directa</td><td>Copiar/pegar</td><td>Alto</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Evidencia Colombia -->
+            <div class="tile" data-cat="colombia">
+              <div class="t-head">
+                <div class="t-title">Comprensión y confianza (IES Colombia)</div>
+                <span class="pill">Terán, 2023</span>
+              </div>
+              <div class="t-note">Estudiantes reportan mayor comprensión y confianza al usar ChatGPT.</div>
+              <div class="bar" title="Percepción positiva (autorreporte)">
+                <i style="width:70%"></i>
+              </div>
+            </div>
+            <div class="tile small" data-cat="colombia">
+              <div class="t-head">
+                <div class="t-title">Feedback inmediato con chatbots</div>
+                <span class="pill">Hurtado et al., 2024</span>
+              </div>
+              <div class="t-note">Facilita ejemplos y retroalimentación; ojo con precisión y dependencia.</div>
+              <div class="bar"><i style="width:76%"></i></div>
+            </div>
+            <div class="tile small" data-cat="colombia">
+              <div class="t-head">
+                <div class="t-title">Mejora en resolución de problemas</div>
+                <span class="pill">Hurtado Martínez et al., 2024</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px">
+                <div class="meter" data-pct="52.4" title="52,4% mejora significativa tras usar chatbot de IA (Python, secundaria)">
+                  <span>52,4%</span>
+                </div>
+                <div class="t-note">Secundaria · chatbot personalizado Python · mejora significativa.</div>
+              </div>
+            </div>
+
+            <!-- Riesgos -->
+            <div class="tile wide" data-cat="riesgos">
+              <div class="t-head">
+                <div class="t-title">Riesgos y mitigaciones</div>
+                <span class="pill">Síntesis</span>
+              </div>
+              <table>
+                <thead><tr><th>Riesgo</th><th>Descripción</th><th>Mitigación</th></tr></thead>
+                <tbody>
+                  <tr><td>Dependencia</td><td>Uso pasivo/automático limita aprendizaje</td><td>Rúbricas y prompts guiados; actividades “sin IA”</td></tr>
+                  <tr><td>Precisión</td><td>Alucinaciones/errores en respuestas</td><td>Verificación cruzada; pruebas unitarias; fuentes</td></tr>
+                  <tr><td>Ética</td><td>Uso no citado; sesgos</td><td>Política de curso; transparencia; datasets responsables</td></tr>
+                </tbody>
+              </table>
+              <div class="note">La relación negativa entre sobreuso y rendimiento (Phung, 2023) refuerza la necesidad de uso guiado (Kazemitabaar, 2023).</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna lateral: texto/refs + controles -->
+      <aside class="card">
+        <h2>Texto & referencias</h2>
+        <div class="content">
+          <p id="texto-full">
+            El aprendizaje de los fundamentos de la programación es desafiante por su naturaleza abstracta, las
+            habilidades lógico-matemáticas y el pensamiento algorítmico requeridos (Hurtado et al., 2024). En contextos
+            masivos, la falta de retroalimentación inmediata y la despersonalización pueden derivar en desmotivación y
+            abandono (Terán, 2023). La IA generativa emerge como apoyo disruptivo: genera ejemplos personalizados,
+            corrige código al instante y brinda asistencia interactiva (Denny et al., 2024).
+            <br><br>
+            A escala global, se observa uso creciente: en una muestra de 231 estudiantes, el <strong>80%</strong> empleó IA
+            para tareas de codificación; sin embargo, el sobreuso se correlacionó negativamente con el rendimiento
+            (Phung et al., 2023). Con uso <em>guiado</em>, se reportan mejoras en pensamiento computacional y autoeficacia
+            (Kazemitabaar et al., 2023). Existen perfiles de interacción (Borrego et al., 2023): quienes dominan más
+            tienden a “refinar código”; quienes inician dependen de respuestas directas, con riesgo de limitar el
+            aprendizaje.
+            <br><br>
+            En Colombia, estudios muestran señales positivas: estudiantes reportan mayor comprensión y confianza con
+            ChatGPT (Terán, 2023); chatbots facilitan feedback y ejemplos, con atención a precisión y dependencia
+            (Hurtado et al., 2024). En secundaria, un chatbot personalizado para Python produjo mejoras significativas en
+            resolución de problemas en el <strong>52,4%</strong> del alumnado (Hurtado Martínez et al., 2024).
+          </p>
+          <ul id="texto-res" class="muted" hidden>
+            <li>Desafíos: abstracción, lógica, algoritmos; clases masivas sin feedback.</li>
+            <li>IA como apoyo: ejemplos, corrección instantánea, tutoría.</li>
+            <li>Global: 80% usa IA; sobreuso ↘ rendimiento; con guía ↗ aprendizaje.</li>
+            <li>Perfiles: “refinador” (bajo riesgo) vs “solución directa” (alto riesgo).</li>
+            <li>Colombia: comprensión/confianza ↑; 52,4% mejora con chatbot Python.</li>
+          </ul>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:12px 0" />
+          <div class="row">
+            <div class="pill tip" title="Oculta/mostrar categorías sin borrar datos.">Filtros por categoría arriba ↑</div>
+            <button class="btn" id="copy">📋 Copiar resumen</button>
+            <button class="btn" id="tts">🔊 Escuchar</button>
+          </div>
+          <p class="note">Referencias citadas: Denny et al. (2024); Phung et al. (2023); Kazemitabaar et al. (2023); Borrego et al. (2023); Terán (2023); Hurtado et al. (2024); Hurtado Martínez et al. (2024).</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+<script>
+/* ===== Donuts (mantener porcentajes) ===== */
+function renderDonuts(){
+  document.querySelectorAll('.meter').forEach(m=>{
+    const pct = parseFloat(m.dataset.pct||0);
+    const deg = Math.max(0, Math.min(100, pct)) * 3.6;
+    m.style.background = `conic-gradient(var(--accent) 0deg ${deg}deg, rgba(255,255,255,.12) ${deg}deg 360deg)`;
+  });
+}
+renderDonuts();
+
+/* ===== Filtros por categoría ===== */
+const chips = document.querySelectorAll('#chips .chip');
+const cards = document.querySelectorAll('#cards .tile');
+chips.forEach(ch=>{
+  ch.addEventListener('click', ()=>{
+    ch.classList.toggle('active');
+    const active = [...chips].filter(x=> x.classList.contains('active')).map(x=> x.dataset.cat);
+    cards.forEach(card=>{
+      card.style.display = active.includes(card.dataset.cat) ? '' : 'none';
+    });
+  });
+});
+
+/* ===== Toggle texto/resumen ===== */
+const btnToggle = document.getElementById('toggle');
+const full = document.getElementById('texto-full');
+const res = document.getElementById('texto-res');
+btnToggle.addEventListener('click', ()=>{
+  const toRes = res.hidden;
+  res.hidden = !toRes;
+  full.hidden = toRes;
+  btnToggle.textContent = toRes ? '👁️ Vista: Resumen' : '👁️ Vista: Texto';
+});
+
+/* ===== Copiar resumen ===== */
+document.getElementById('copy').addEventListener('click', async ()=>{
+  const txt = `Desafíos: abstracción, lógica, algoritmos; y menor feedback en clases masivas.
+IA como apoyo: ejemplos personalizados, corrección instantánea, tutoría.
+Global: 80% usa IA; sobreuso se asocia a menor rendimiento; con guía mejora pensamiento computacional/autoeficacia.
+Perfiles: “refinador” vs “solución directa”.
+Colombia: comprensión/confianza ↑; 52,4% mejora con chatbot Python.`;
+  try{ await navigator.clipboard.writeText(txt); toast('Resumen copiado ✅'); }
+  catch{ toast('No se pudo copiar 😅'); }
+});
+
+/* ===== TTS ===== */
+document.getElementById('tts').addEventListener('click', ()=>{
+  const u = new SpeechSynthesisUtterance(
+    'Evidencia sobre inteligencia artificial en fundamentos de programación. '+
+    'Globalmente, el 80 por ciento usa herramientas de IA; el sobreuso se asocia a menor rendimiento. '+
+    'Con uso guiado mejora el pensamiento computacional y la autoeficacia. '+
+    'En Colombia, se reportan aumentos en comprensión y confianza, y un 52 punto 4 por ciento de mejora con chatbots.'
+  );
+  u.lang = 'es-ES';
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+});
+
+/* ===== Toast util ===== */
+function toast(msg){
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed; bottom:16px; left:50%; transform:translateX(-50%); padding:8px 12px; border:1px solid var(--border); background:var(--glass); border-radius:10px; backdrop-filter:blur(6px); z-index:9999';
+  document.body.appendChild(t); setTimeout(()=> t.remove(), 1400);
+}
+</script>
+</body>
+</html>

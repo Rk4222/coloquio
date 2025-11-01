@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Área Problemática — Fundamentos de Programación</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root{
+      --bg:#0a0f14; --bg2:#0e1521; --card:#121a26;
+      --fg:#e6f3ff; --muted:#a7b4c6;
+      --primary:#7dd3fc; --accent:#a78bfa; --ok:#34d399; --warn:#fbbf24; --err:#ff6961;
+      --border:rgba(255,255,255,.14); --glass:rgba(255,255,255,.06);
+      --shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(124,58,237,.25);
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f9ff; --bg2:#eef4ff; --card:#ffffff; --fg:#0d1320; --muted:#576176;
+        --border:rgba(0,0,0,.12); --glass:rgba(0,0,0,.04);
+        --shadow: 0 10px 30px rgba(0,0,0,.08), 0 0 24px rgba(124,58,237,.12);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--fg);
+      background:
+        radial-gradient(1200px 600px at 8% 8%, var(--bg2) 0%, transparent 60%),
+        radial-gradient(1000px 500px at 92% 92%, var(--bg2) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, #0a0e16 100%);
+      font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:20px; display:grid; gap:14px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .brand{display:flex; align-items:center; gap:10px}
+    .badge{border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:12px; color:var(--primary)}
+    .sub{color:var(--muted); font-size:.95rem}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .btn{
+      border:1px solid var(--border); background:var(--glass); color:var(--fg);
+      padding:8px 12px; border-radius:10px; cursor:pointer; transition:.15s; user-select:none
+    }
+    .btn:hover{border-color:rgba(255,255,255,.32)}
+    .btn.ok{border-color:rgba(52,211,153,.35)}
+    .grid{display:grid; grid-template-columns: 1.2fr .8fr; gap:16px}
+    @media (max-width: 900px){ .grid{grid-template-columns: 1fr} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--border); border-radius:16px; box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{margin:0; padding:14px 16px; border-bottom:1px solid var(--border); font-size:1.05rem}
+    .card .content{padding:14px 16px}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block; border:1px solid var(--border); background:var(--glass); padding:3px 8px; border-radius:999px; margin:0 6px 6px 0; cursor:pointer}
+    .pill:hover{border-color:rgba(255,255,255,.35)}
+    .mark{background: linear-gradient(transparent 60%, rgba(167,139,250,.35) 60%)}
+
+    /* tooltip */
+    .tip{position:relative; cursor:help; border-bottom:1px dotted currentColor}
+    .tip:hover .tipbox{opacity:1; transform:translateY(-6px); pointer-events:auto}
+    .tipbox{
+      position:absolute; left:0; bottom:120%; min-width:240px; max-width:280px;
+      background: var(--card); color:var(--fg);
+      border:1px solid var(--border); border-radius:10px; padding:8px 10px;
+      box-shadow: var(--shadow); opacity:0; transform:translateY(-2px); transition:.12s; pointer-events:none; z-index:5
+    }
+
+    /* quiz */
+    .q{display:grid; gap:10px}
+    .opt{display:flex; gap:8px; align-items:center; padding:10px; border:1px solid var(--border); border-radius:10px; cursor:pointer}
+    .opt input{accent-color: var(--accent)}
+    .opt.correct{border-color:rgba(52,211,153,.5)}
+    .opt.wrong{border-color:rgba(255,105,97,.6)}
+    .feedback{margin-top:8px; font-weight:600}
+    .feedback.ok{color:var(--ok)} .feedback.err{color:var(--err)}
+
+    /* IA demo */
+    textarea, input[type="text"]{width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--glass); color:var(--fg); font:inherit}
+    pre{
+      margin:0; padding:12px; background:var(--card); border-top:1px dashed var(--border); overflow:auto; border-bottom-left-radius:16px; border-bottom-right-radius:16px
+    }
+    code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+
+    .mini-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px}
+    .mini-tabs .btn{padding:6px 10px; font-size:.92rem}
+    .callout{
+      border-left:3px solid var(--accent); padding:10px 12px; background: linear-gradient(180deg, rgba(167,139,250,.08), transparent); border-radius:10px
+    }
+    .progress{height:8px; background:var(--glass); border:1px solid var(--border); border-radius:999px; overflow:hidden}
+    .bar{height:100%; width:0%; background: linear-gradient(90deg, var(--primary), var(--accent))}
+    .kbd{border:1px solid var(--border); background:var(--glass); padding:2px 6px; border-radius:6px; font-family: ui-monospace; font-size:.95rem}
+    .sr{position:absolute; left:-10000px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="badge">Área Problemática</span>
+        <span class="sub">Fundamentos de Programación · Coloquio practiva investigativa II</span>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="history.back()">↩ Volver</button>
+        <button class="btn" id="toggleView">👁️ Vista: Texto</button>
+        <button class="btn" id="ttsBtn">🔊 Escuchar</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Columna principal -->
+      <section class="card" id="card-texto" aria-labelledby="h-area">
+        <h2 id="h-area">Descripción interactiva</h2>
+        <div class="content">
+          <div class="mini-tabs">
+            <button class="btn" data-gloss="logico">Lógico-matemáticas</button>
+            <button class="btn" data-gloss="abstracto">Abstracción</button>
+            <button class="btn" data-gloss="algoritmos">Algoritmos</button>
+            <button class="btn" data-gloss="feedback">Retroalimentación</button>
+            <button class="btn" data-gloss="despersonalizacion">Despersonalización</button>
+            <button class="btn" data-gloss="ia">Inteligencia Artificial</button>
+          </div>
+
+          <article id="textoCompleto">
+            <p>
+              El aprendizaje de los <span class="tip">fundamentos de la programación
+                <span class="tipbox">Conjunto de conceptos base: variables, tipos, control de flujo, funciones, estructuras de datos, etc.</span>
+              </span> puede ser difícil para muchos estudiantes porque exige el desarrollo de
+              habilidades <span class="mark tip">lógico-matemáticas
+                <span class="tipbox">Razón formal, aritmética, álgebra básica, y pensamiento sistemático para seguir reglas.</span>
+              </span> y estructurales, la comprensión de
+              <span class="mark tip">conceptos abstractos
+                <span class="tipbox">Ideas que no se ven directamente (p.ej., “variable”, “estado”, “referencia”).</span>
+              </span>
+              y la resolución de problemas a través de
+              <span class="mark tip">algoritmos
+                <span class="tipbox">Secuencias finitas y ordenadas de pasos para resolver un problema.</span>
+              </span>.
+            </p>
+
+            <p>
+              La falta de <span class="mark tip">retroalimentación inmediata
+                <span class="tipbox">Respuesta rápida sobre si tu solución va bien o hay un error—clave para aprender por iteración.</span>
+              </span>, la aclaración de dudas y la
+              <span class="mark tip">despersonalización
+                <span class="tipbox">Cuando el grupo es grande, la atención se diluye y el acompañamiento se vuelve impersonal.</span>
+              </span>
+              que provoca un grupo numeroso en el aula puede generar desmotivación, lo que lleva a tasas más altas de abandono.
+            </p>
+
+            <p class="callout">
+              En este sentido, la <strong>inteligencia artificial</strong> se sitúa como una herramienta innovadora: puede
+              <em>generar ejemplos personalizados</em>, ofrecer <em>corrección de código inmediata</em> y brindar <em>asistencia interactiva</em>, apoyando la adaptación al mundo de la programación.
+            </p>
+          </article>
+
+          <article id="textoSimple" hidden>
+            <ul>
+              <li>Aprender a programar exige: razonamiento lógico, manejo de abstracciones y diseño de algoritmos.</li>
+              <li>En cursos masivos: hay menos feedback y acompañamiento → sube la desmotivación y el abandono.</li>
+              <li>La IA puede ayudar con: ejemplos a la medida, correcciones instantáneas y tutoría interactiva.</li>
+            </ul>
+          </article>
+
+          <div class="progress" aria-label="Progreso de lectura">
+            <div class="bar" id="bar"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna lateral -->
+      <aside class="card" aria-labelledby="h-glos">
+        <h2 id="h-glos">Glosario y acciones</h2>
+        <div class="content">
+          <div id="glosario" style="display:grid; gap:8px">
+            <div><span class="pill" data-go="logico">Habilidades lógico-matemáticas</span> <span class="muted">· razonamiento formal</span></div>
+            <div><span class="pill" data-go="abstracto">Abstracción</span> <span class="muted">· centrarse en lo esencial</span></div>
+            <div><span class="pill" data-go="algoritmos">Algoritmos</span> <span class="muted">· pasos ordenados</span></div>
+            <div><span class="pill" data-go="feedback">Retroalimentación inmediata</span> <span class="muted">· iterar rápido</span></div>
+            <div><span class="pill" data-go="despersonalizacion">Despersonalización</span> <span class="muted">· grupos grandes</span></div>
+            <div><span class="pill" data-go="ia">IA educativa</span> <span class="muted">· ejemplos y corrección</span></div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin:12px 0" />
+
+          <div style="display:grid; gap:8px">
+            <button class="btn ok" id="markDone">✔ Marcar como leído</button>
+            <button class="btn" id="copyKeyIdeas">📋 Copiar ideas clave</button>
+          </div>
+
+          <p class="muted" id="readState" style="margin-top:8px"></p>
+        </div>
+      </aside>
+
+      <!-- Fila completa: Quiz -->
+      <section class="card" style="grid-column: 1 / -1" aria-labelledby="h-quiz">
+        <h2 id="h-quiz">Mini-quiz (autoevaluación rápida)</h2>
+        <div class="content">
+          <div class="q" id="quiz">
+            <label class="opt"><input type="radio" name="q1" value="a" /> La abstracción consiste en memorizar sintaxis sin entender.</label>
+            <label class="opt"><input type="radio" name="q1" value="b" /> La abstracción es enfocarse en lo esencial y ocultar detalles innecesarios.</label>
+            <label class="opt"><input type="radio" name="q1" value="c" /> La abstracción es compilar más rápido.</label>
+            <div class="feedback" id="f1"></div>
+
+            <label class="opt"><input type="radio" name="q2" value="a" /> Un algoritmo es cualquier dibujo bonito.</label>
+            <label class="opt"><input type="radio" name="q2" value="b" /> Un algoritmo es una secuencia finita y ordenada de pasos para resolver un problema.</label>
+            <label class="opt"><input type="radio" name="q2" value="c" /> Un algoritmo es sólo para inteligencia artificial.</label>
+            <div class="feedback" id="f2"></div>
+
+            <label class="opt"><input type="radio" name="q3" value="a" /> La retroalimentación inmediata ayuda a iterar y aprender más rápido.</label>
+            <label class="opt"><input type="radio" name="q3" value="b" /> Es mejor esperar semanas para saber si tu código funciona.</label>
+            <label class="opt"><input type="radio" name="q3" value="c" /> La retroalimentación inmediata desmotiva a todos.</label>
+            <div class="feedback" id="f3"></div>
+
+            <button class="btn" id="checkQuiz">Revisar</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fila completa: Demo IA -->
+      <section class="card" style="grid-column: 1 / -1" aria-labelledby="h-ia">
+        <h2 id="h-ia">Demo: Asistencia con IA (simulada)</h2>
+        <div class="content">
+          <p class="muted">Escribe qué necesitas (p.ej., “ejemplo personalizado de condicionales para estudiantes visuales” o pega un código corto con un error). Daremos una salida simulada tipo tutor:</p>
+          <div style="display:grid; gap:10px; margin-top:6px">
+            <input type="text" id="iaPrompt" placeholder="Ej: genera un ejemplo personalizado de bucles con analogía de recetas" />
+            <div style="display:flex; gap:8px; flex-wrap:wrap">
+              <button class="btn" data-preset="ejemplos">Ejemplos personalizados</button>
+              <button class="btn" data-preset="correccion">Corrección inmediata</button>
+              <button class="btn" data-preset="asistencia">Asistencia interactiva</button>
+            </div>
+            <button class="btn ok" id="runIA">▶ Generar salida</button>
+          </div>
+        </div>
+        <pre id="iaOut"><code>// La respuesta aparecerá aquí…</code></pre>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ===== Progreso de lectura básico (scroll dentro del card) =====
+    const cardTexto = document.getElementById('card-texto');
+    const bar = document.getElementById('bar');
+    cardTexto.querySelector('.content').addEventListener('scroll', (e)=>{
+      const el = e.target;
+      const p = (el.scrollTop / (el.scrollHeight - el.clientHeight)) * 100;
+      bar.style.width = Math.min(100, p) + '%';
+    }, {passive:true});
+
+    // ===== Vista simple / completa =====
+    const toggleBtn = document.getElementById('toggleView');
+    const textoCompleto = document.getElementById('textoCompleto');
+    const textoSimple = document.getElementById('textoSimple');
+    toggleBtn.addEventListener('click', ()=>{
+      const isSimple = !textoSimple.hidden;
+      textoSimple.hidden = isSimple;
+      textoCompleto.hidden = !isSimple;
+      toggleBtn.textContent = isSimple ? '👁️ Vista: Texto' : '👁️ Vista: Resumen';
+    });
+
+    // ===== Glosario: desplazar y resaltar =====
+    const mapTargets = {
+      logico: 'Lógico-matemáticas',
+      abstracto: 'conceptos abstractos',
+      algoritmos: 'algoritmos',
+      feedback: 'retroalimentación',
+      despersonalizacion: 'despersonalización',
+      ia: 'inteligencia artificial'
+    };
+    document.querySelectorAll('[data-go]').forEach(p=>{
+      p.addEventListener('click', ()=>{
+        const key = p.getAttribute('data-go');
+        // busca el texto en el artículo y resalta temporalmente
+        const t = Object.values(mapTargets).find(v => v.toLowerCase().includes(key.replace('logico','lógico')));
+        flashMark(key);
+      });
+    });
+    // mini-tabs de arriba llaman al mismo flash
+    document.querySelectorAll('[data-gloss]').forEach(b=>{
+      b.addEventListener('click', ()=> flashMark(b.getAttribute('data-gloss')));
+    });
+
+    function flashMark(key){
+      // Encontrar el primer .mark que contenga el término aproximado
+      const candidates = [...document.querySelectorAll('.mark')];
+      const cand = candidates.find(el=> el.textContent.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(key));
+      if(cand){
+        cand.scrollIntoView({behavior:'smooth', block:'center'});
+        const old = cand.style.boxShadow;
+        cand.style.boxShadow = '0 0 0 6px rgba(124,58,237,.28)';
+        setTimeout(()=> cand.style.boxShadow = old, 900);
+      }
+    }
+
+    // ===== Estado leído en localStorage =====
+    const markBtn = document.getElementById('markDone');
+    const readState = document.getElementById('readState');
+    const KEY = 'area_problematica_read';
+    function updateRead(){
+      const val = localStorage.getItem(KEY);
+      readState.textContent = val ? `✔ Marcado como leído el ${new Date(+val).toLocaleString()}` : 'Aún no marcado como leído.';
+    }
+    updateRead();
+    markBtn.addEventListener('click', ()=>{
+      localStorage.setItem(KEY, Date.now().toString());
+      updateRead();
+    });
+
+    // ===== Copiar ideas clave =====
+    document.getElementById('copyKeyIdeas').addEventListener('click', async ()=>{
+      const txt = [
+        '• Requiere razonamiento lógico, abstracciones y algoritmos.',
+        '• Cursos masivos reducen feedback → desmotivación/abandono.',
+        '• IA: ejemplos personalizados, corrección inmediata, asistencia interactiva.'
+      ].join('\n');
+      try{
+        await navigator.clipboard.writeText(txt);
+        toast('Ideas clave copiadas ✅');
+      }catch{ toast('No se pudo copiar 😅'); }
+    });
+
+    function toast(msg){
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = 'position:fixed; bottom:16px; left:50%; transform:translateX(-50%); padding:8px 12px; border:1px solid var(--border); background:var(--glass); border-radius:10px; backdrop-filter:blur(6px); z-index:9999';
+      document.body.appendChild(t);
+      setTimeout(()=> t.remove(), 1400);
+    }
+
+    // ===== Mini-quiz =====
+    const ans = { q1:'b', q2:'b', q3:'a' };
+    document.getElementById('checkQuiz').addEventListener('click', ()=>{
+      check('q1','f1'); check('q2','f2'); check('q3','f3');
+      toast('Quiz revisado ✨');
+    });
+
+    function check(name, feedId){
+      const sel = document.querySelector(`input[name="${name}"]:checked`);
+      const feedback = document.getElementById(feedId);
+      // reset estilos
+      document.querySelectorAll(`input[name="${name}"]`).forEach(r=> r.closest('.opt').classList.remove('correct','wrong'));
+      if(!sel){ feedback.textContent = 'Selecciona una opción.'; feedback.className='feedback err'; return; }
+      const ok = sel.value === ans[name];
+      feedback.textContent = ok ? '¡Correcto!' : 'Respuesta incorrecta';
+      feedback.className = 'feedback ' + (ok ? 'ok':'err');
+      sel.closest('.opt').classList.add(ok ? 'correct':'wrong');
+    }
+
+    // ===== Demo IA (simulada) =====
+    const iaOut = document.getElementById('iaOut').querySelector('code');
+    const iaPrompt = document.getElementById('iaPrompt');
+    document.getElementById('runIA').addEventListener('click', ()=> runTutor(iaPrompt.value));
+    document.querySelectorAll('[data-preset]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const mode = b.getAttribute('data-preset');
+        iaPrompt.value = {
+          ejemplos: 'Genera un ejemplo personalizado de bucles usando analogía de recetas para principiantes.',
+          correccion: 'Corrige este código y explica el error: for i in range(1,5) print(i)',
+          asistencia: 'Explícame paso a paso cómo diseñar un algoritmo para sumar los primeros N números.'
+        }[mode];
+      });
+    });
+
+    function runTutor(prompt){
+      const p = (prompt||'').toLowerCase();
+      let out = '';
+      if(!p){ out = '// Escribe una petición arriba y presiona "Generar salida"'; }
+      else if(p.includes('corrige') || p.includes('corrigir') || p.includes('correccion') || p.includes('corrige este codigo')){
+        out = [
+`// Corrección inmediata (Python)
+# Error: falta ":" al final del for
+for i in range(1, 5):
+    print(i)
+
+// Sugerencia didáctica:
+# range(1,5) genera 1,2,3,4 (el 5 no se incluye).
+# Añade comentarios para reforzar la comprensión.`
+        ].join('\n');
+      } else if(p.includes('algoritmo') || p.includes('sumar los primeros n')){
+        out = [
+`// Diseño guiado de algoritmo (paso a paso)
+1) Entender: sumar 1+2+...+N
+2) Modelo iterativo:
+   suma = 0
+   para i de 1 a N: suma = suma + i
+3) Verificar con N=4 → 1+2+3+4 = 10
+4) Código (JS):
+function sumaPrimerosN(n){
+  let s = 0;
+  for(let i=1;i<=n;i++){ s+=i; }
+  return s;
+}`
+        ].join('\n');
+      } else if(p.includes('bucle') || p.includes('bucles') || p.includes('loop') || p.includes('ejemplo personalizado')){
+        out = [
+`// Analogía de recetas (bucles)
+# "Repite 3 veces: sirve una arepa"
+for i in range(3):
+    print("Servir arepa", i+1)
+
+// Versión JavaScript
+for (let i=1; i<=3; i++){
+  console.log("Servir arepa", i);
+}`
+        ].join('\n');
+      } else {
+        out = `// Tutor simulado:\nTu petición: ${prompt}\n\n→ Recomiendo: dividir el problema, proponer un ejemplo "Hola Mundo", y luego una variante con entrada del usuario.`;
+      }
+      typeWriter(iaOut, out);
+    }
+
+    function typeWriter(node, text){
+      node.textContent = '';
+      let i=0; const id = setInterval(()=>{
+        node.textContent += text[i++] || '';
+        if(i>text.length) clearInterval(id);
+      }, 8);
+    }
+
+    // ===== TTS (lee la versión simplificada) =====
+    const ttsBtn = document.getElementById('ttsBtn');
+    ttsBtn.addEventListener('click', ()=>{
+      const u = new SpeechSynthesisUtterance(
+        'Aprender a programar exige razonamiento lógico, manejo de abstracciones y diseño de algoritmos. '+
+        'En cursos masivos hay menos retroalimentación y acompañamiento, lo que puede desmotivar. '+
+        'La inteligencia artificial puede ayudar con ejemplos personalizados, correcciones instantáneas y tutoría interactiva.'
+      );
+      u.lang = 'es-ES'; // suele dar buena calidad; ajusta si prefieres 'es-CO' si está disponible
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    });
+  </script>
+</body>
+</html>

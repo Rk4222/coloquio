@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tablas dinámicas — Proyecto IA en Fundamentos</title>
+<meta name="color-scheme" content="dark light" />
+<style>
+  :root{
+    --bg:#0a0f14; --bg2:#0e1521; --card:#121a26;
+    --fg:#e6f3ff; --muted:#a7b4c6;
+    --primary:#7dd3fc; --accent:#a78bfa; --ok:#34d399; --warn:#fbbf24; --err:#ff6961;
+    --border:rgba(255,255,255,.14); --glass:rgba(255,255,255,.06);
+    --shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(124,58,237,.25);
+    --row:#111a27; --rowAlt:#0e1724; --hover:rgba(167,139,250,.10);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f6f9ff; --bg2:#eef4ff; --card:#ffffff; --fg:#0d1320; --muted:#576176;
+      --border:rgba(0,0,0,.12); --glass:rgba(0,0,0,.04);
+      --row:#ffffff; --rowAlt:#f7f9ff; --hover:rgba(167,139,250,.16);
+      --shadow: 0 10px 30px rgba(0,0,0,.08), 0 0 24px rgba(124,58,237,.12);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--fg);
+    background:
+      radial-gradient(1200px 600px at 8% 8%, var(--bg2) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 92% 92%, var(--bg2) 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, #0a0e16 100%);
+    font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, "Helvetica Neue", Arial;
+  }
+  .wrap{max-width:1200px; margin:0 auto; padding:18px; display:grid; gap:16px}
+  header{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .brand{display:flex; align-items:center; gap:10px}
+  .badge{border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:12px; color:var(--primary)}
+  .sub{color:var(--muted)}
+  .panel{
+    background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border:1px solid var(--border); border-radius:16px; box-shadow: var(--shadow);
+    overflow: clip;
+  }
+  .panel h2{margin:0; padding:14px 16px; border-bottom:1px solid var(--border); font-size:1.06rem}
+  .panel .content{padding:12px 12px 16px}
+  .tools{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px}
+  .btn, .chip{
+    border:1px solid var(--border); background:var(--glass); color:var(--fg);
+    padding:7px 10px; border-radius:10px; cursor:pointer; user-select:none; transition:.15s;
+  }
+  .btn:hover, .chip:hover{border-color: rgba(255,255,255,.32)}
+  .chip.active{outline:2px solid var(--accent)}
+  input[type="search"], select{
+    padding:8px 10px; border-radius:10px; border:1px solid var(--border);
+    background:var(--glass); color:var(--fg)
+  }
+
+  table{
+    width:100%; border-collapse: separate; border-spacing:0;
+    border:1px solid var(--border); border-radius:12px; overflow:hidden;
+  }
+  thead th{
+    position:sticky; top:0; z-index:2;
+    background: linear-gradient(180deg, rgba(167,139,250,.18), rgba(167,139,250,.06));
+    color:var(--fg); text-align:left; padding:10px 10px; font-weight:600;
+    border-bottom:1px solid var(--border); cursor:pointer;
+  }
+  tbody tr:nth-child(odd){ background: var(--rowAlt) }
+  tbody tr:nth-child(even){ background: var(--row) }
+  tbody tr:hover{ background: var(--hover) }
+  td{ padding:10px; vertical-align: top; border-bottom:1px solid rgba(255,255,255,.06) }
+
+  .hide{display:none}
+  .note{color:var(--muted); font-size:.92rem}
+  .right{text-align:right}
+  .nowrap{white-space:nowrap}
+
+  /* Gantt mini barras */
+  .gantt-cell{min-width:48px; height:18px; position:relative; border-left:1px solid rgba(255,255,255,.05)}
+  .bar{position:absolute; inset:2px; border-radius:6px; background: linear-gradient(90deg, var(--primary), var(--accent)); opacity:.85}
+  .legend{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .dot{width:10px; height:10px; border-radius:999px; background: linear-gradient(90deg, var(--primary), var(--accent)); display:inline-block}
+
+  .col-toggle{display:flex; gap:8px; flex-wrap:wrap; margin-left:auto}
+  .sum{font-weight:700; color:var(--ok)}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="badge">Tablas dinámicas</span>
+        <span class="sub">Proyecto: IA en Fundamentos de Programación (2020–2025)</span>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button class="btn" onclick="history.back()">↩ Volver</button>
+        <button class="btn" onclick="scrollTo(0,0)">↑ Arriba</button>
+      </div>
+    </header>
+
+    <!-- Tabla 1: Objetivos específicos -->
+    <section class="panel" id="t1">
+      <h2>Tabla 1 — Objetivos específicos</h2>
+      <div class="content">
+        <div class="tools">
+          <input type="search" placeholder="Buscar en la tabla…" data-table="tbl1" />
+          <button class="btn" data-export="tbl1">⬇ Exportar CSV</button>
+          <div class="col-toggle" data-cols="tbl1"></div>
+        </div>
+        <table id="tbl1" data-sort="">
+          <thead>
+            <tr>
+              <th data-col="Objetivo">Objetivo específico</th>
+              <th data-col="Producto">Resultados / productos esperados</th>
+              <th data-col="Indicador">Indicador</th>
+              <th data-col="Beneficiario">Beneficiario</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Describir el estado actual del uso de IA generativa en la enseñanza de fundamentos de programación (2020–2025).</td>
+              <td>Informe de revisión sistemática con mapa temático global y colombiano del uso educativo de IA.</td>
+              <td>Número de estudios analizados y clasificados; mapa temático entregado.</td>
+              <td>Comunidad académica, investigadores en educación y tecnología.</td>
+            </tr>
+            <tr>
+              <td>Definir los principales modelos, herramientas y metodologías de IA generativa aplicadas a la enseñanza de la programación.</td>
+              <td>Catálogo técnico tabulado y guía validada de prompts pedagógicos.</td>
+              <td>Herramientas clasificadas y validadas por docentes.</td>
+              <td>Docentes de programación e instituciones universitarias.</td>
+            </tr>
+            <tr>
+              <td>Analizar beneficios, limitaciones y riesgos reportados sobre IA generativa en el aprendizaje de programación.</td>
+              <td>Matriz analítica de beneficios y riesgos con evidencia empírica.</td>
+              <td>Número de categorías emergentes y frecuencia de percepciones por grupo.</td>
+              <td>Estudiantes, docentes e investigadores.</td>
+            </tr>
+            <tr>
+              <td>Comparar experiencias y resultados obtenidos en Colombia con países de contextos similares.</td>
+              <td>Informe comparativo y mapa regional de adopción.</td>
+              <td>Número de países y universidades comparadas.</td>
+              <td>Gestores académicos y responsables de política educativa.</td>
+            </tr>
+            <tr>
+              <td>Interpretar la factibilidad de incorporar IA generativa en la enseñanza de fundamentos de programación.</td>
+              <td>Informe de viabilidad institucional y matriz de escenarios de implementación.</td>
+              <td>Porcentaje de instituciones con infraestructura y disposición docente.</td>
+              <td>Instituciones de educación superior y ministerios.</td>
+            </tr>
+            <tr>
+              <td>Establecer lineamientos para futuros proyectos educativos en Colombia.</td>
+              <td>Guía de implementación y talleres piloto con docentes.</td>
+              <td>Publicación validada y número de instituciones participantes.</td>
+              <td>Sistema educativo colombiano, universidades y comunidad científica.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tabla 3: Tipología de productos -->
+    <section class="panel" id="t3">
+      <h2>Tabla 3 — Tipología de productos de investigación</h2>
+      <div class="content">
+        <div class="tools">
+          <input type="search" placeholder="Buscar (ej. 'artículos', 'chatbot', 'guía')…" data-table="tbl3" />
+          <button class="btn" data-export="tbl3">⬇ Exportar CSV</button>
+          <div class="col-toggle" data-cols="tbl3"></div>
+        </div>
+        <table id="tbl3">
+          <thead>
+            <tr>
+              <th data-col="Tipo">Tipo de Producto</th>
+              <th data-col="Subtipo">Subtipo</th>
+              <th data-col="Producto">Producto específico del proyecto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Nuevo conocimiento -->
+            <tr><td>Generación de nuevo conocimiento</td><td>Artículos</td><td>2 artículos en revistas indexadas Q1/Q2</td></tr>
+            <tr><td>Generación de nuevo conocimiento</td><td>Artículos</td><td>1 artículo en revista colombiana categoría A</td></tr>
+            <tr><td>Generación de nuevo conocimiento</td><td>Capítulos de libro</td><td>1 capítulo sobre análisis beneficios/riesgos</td></tr>
+            <tr><td>Generación de nuevo conocimiento</td><td>Capítulos de libro</td><td>1 capítulo sobre comparación regional</td></tr>
+            <tr><td>Generación de nuevo conocimiento</td><td>Libros</td><td>1 informe técnico final de investigación (formato libro)</td></tr>
+            <!-- Desarrollo tecnológico e innovación -->
+            <tr><td>Desarrollo tecnológico e innovación</td><td>Software</td><td>Prototipo de chatbot educativo institucional</td></tr>
+            <tr><td>Desarrollo tecnológico e innovación</td><td>Software</td><td>Dashboard de seguimiento del uso de IA</td></tr>
+            <tr><td>Desarrollo tecnológico e innovación</td><td>Regulaciones/guías</td><td>Guía de implementación de IA generativa para fundamentos de programación en Colombia</td></tr>
+            <tr><td>Desarrollo tecnológico e innovación</td><td>Consultorías</td><td>3 consultorías técnico-pedagógicas a instituciones</td></tr>
+            <!-- Apropiación social del conocimiento -->
+            <tr><td>Apropiación social del conocimiento</td><td>Estrategias pedagógicas</td><td>Modelo pedagógico de uso guiado de IA</td></tr>
+            <tr><td>Apropiación social del conocimiento</td><td>Estrategias pedagógicas</td><td>Banco de prompts pedagógicos validados</td></tr>
+            <tr><td>Apropiación social del conocimiento</td><td>Eventos académicos</td><td>2 talleres de validación con docentes</td></tr>
+            <tr><td>Apropiación social del conocimiento</td><td>Eventos académicos</td><td>1 seminario de difusión de resultados</td></tr>
+            <tr><td>Apropiación social del conocimiento</td><td>Eventos académicos</td><td>Participación en 2 congresos nacionales/internacionales</td></tr>
+            <tr><td>Apropiación social del conocimiento</td><td>Espacios de participación</td><td>Taller con stakeholders institucionales</td></tr>
+            <tr><td>Apropiación social del conocimiento</td><td>Espacios de participación</td><td>Grupo focal con estudiantes</td></tr>
+            <tr><td>Apropiación social del conocimiento</td><td>Informes finales</td><td>Informe técnico final de investigación</td></tr>
+            <!-- Formación de recurso humano -->
+            <tr><td>Formación de recurso humano</td><td>Trabajo de grado</td><td>1 tesis de maestría (co-investigador)</td></tr>
+            <tr><td>Formación de recurso humano</td><td>Trabajo de grado</td><td>2 trabajos de pregrado (auxiliares de investigación)</td></tr>
+            <tr><td>Formación de recurso humano</td><td>Proyectos I+D</td><td>Proyecto de investigación registrado y avalado</td></tr>
+            <tr><td>Formación de recurso humano</td><td>Proyectos I+D</td><td>Línea de investigación en IA educativa consolidada</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tabla 4: Impactos esperados -->
+    <section class="panel" id="t4">
+      <h2>Tabla 4 — Impactos esperados del proyecto</h2>
+      <div class="content">
+        <div class="tools">
+          <input type="search" placeholder="Buscar (ej. 'docentes', 'equidad', 'Q1')" data-table="tbl4" />
+          <button class="btn" data-export="tbl4">⬇ Exportar CSV</button>
+          <div class="col-toggle" data-cols="tbl4"></div>
+        </div>
+        <table id="tbl4">
+          <thead>
+            <tr>
+              <th data-col="Impacto">Impacto esperado</th>
+              <th data-col="Plazo">Plazo (años)</th>
+              <th data-col="Indicador">Indicador verificable</th>
+              <th data-col="Supuestos">Supuestos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Académico: Consolidación de línea de investigación en IA educativa en Colombia</td>
+              <td>Corto (1–4)</td>
+              <td>2 artículos en revistas indexadas; 3+ eventos; grupo de investigación clasificado</td>
+              <td>Convocatorias; redes activas; apoyo institucional a publicaciones</td>
+            </tr>
+            <tr>
+              <td>Educativo: Mejora del proceso de enseñanza-aprendizaje en fundamentos</td>
+              <td>Mediano (5–9)</td>
+              <td>+15–20% rendimiento; −10% deserción; +25% satisfacción</td>
+              <td>Disposición institucional; capacitación docente; acceso a herramientas</td>
+            </tr>
+            <tr>
+              <td>Tecnológico/Innovación: Adopción de herramientas de IA en cursos</td>
+              <td>Corto (1–4)</td>
+              <td>10+ docentes; 300+ estudiantes; 5 instituciones con pilotos</td>
+              <td>Infraestructura básica; licencias/acceso; voluntad de innovación</td>
+            </tr>
+            <tr>
+              <td>Social: Reducción de brechas en competencias digitales y pensamiento computacional</td>
+              <td>Mediano (5–9)</td>
+              <td>Equidad y diversidad en TIC; mejora en alfabetización digital</td>
+              <td>Programas de inclusión; políticas públicas; financiamiento sostenido</td>
+            </tr>
+            <tr>
+              <td>Desarrollo tecnológico: Recursos educativos abiertos con IA</td>
+              <td>Corto (1–4)</td>
+              <td>Chatbot funcional; 100+ prompts; guía con 500+ descargas</td>
+              <td>Licencias open source; repositorios activos; cultura de compartir</td>
+            </tr>
+            <tr>
+              <td>Simbólico/Reconocimiento: Colombia referente regional</td>
+              <td>Largo (10+)</td>
+              <td>Redes internacionales; invitaciones; citaciones de la guía</td>
+              <td>Interés gubernamental; visibilidad; continuidad investigativa</td>
+            </tr>
+            <tr>
+              <td>Formación: Capacitación ética de IA para docentes y estudiantes</td>
+              <td>Corto (1–4)</td>
+              <td>50+ docentes capacitados; 3 talleres; materiales publicados</td>
+              <td>Tiempo disponible; apoyo institucional; recursos</td>
+            </tr>
+            <tr>
+              <td>Organización: Comunidades de práctica en IA educativa</td>
+              <td>Mediano (5–9)</td>
+              <td>Red 20+ instituciones; encuentros semestrales; repositorio colaborativo</td>
+              <td>Voluntad interinstitucional; plataformas; liderazgo compartido</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tabla 5: Cronograma (Gantt tabular) -->
+    <section class="panel" id="t5">
+      <h2>Tabla 5 — Cronograma del proyecto (Gantt tabular 12 meses)</h2>
+      <div class="content">
+        <div class="tools">
+          <div class="legend">
+            <span class="dot"></span> Actividad activa
+            <span class="chip" data-phase="F0">FASE 0</span>
+            <span class="chip" data-phase="F1">FASE I</span>
+            <span class="chip" data-phase="F2">FASE II</span>
+            <span class="chip" data-phase="F3">FASE III</span>
+            <span class="chip" data-phase="OBJ-A">Obj A</span>
+            <span class="chip" data-phase="OBJ-B">Obj B</span>
+            <span class="chip" data-phase="OBJ-C">Obj C</span>
+            <span class="chip" data-phase="OBJ-D">Obj D</span>
+            <span class="chip" data-phase="OBJ-E">Obj E</span>
+            <span class="chip" data-phase="OBJ-F">Obj F</span>
+          </div>
+          <div style="margin-left:auto; display:flex; gap:8px; flex-wrap:wrap">
+            <input type="search" placeholder="Filtrar actividades…" data-table="tbl5" />
+            <button class="btn" data-export="tbl5">⬇ Exportar CSV</button>
+          </div>
+        </div>
+        <div class="note">Tip: puedes ordenar por “Fase/Objetivo” u “Actividad”. Clic en cabeceras.</div>
+
+        <table id="tbl5">
+          <thead>
+            <tr>
+              <th data-col="Tag">Fase / Objetivo</th>
+              <th data-col="Actividad">Actividad</th>
+              <th class="nowrap">M0–1</th>
+              <th class="nowrap">M2–3</th>
+              <th class="nowrap">M4</th>
+              <th class="nowrap">M5</th>
+              <th class="nowrap">M6–7</th>
+              <th class="nowrap">M8</th>
+              <th class="nowrap">M9</th>
+              <th class="nowrap">M10</th>
+              <th class="nowrap">M11–12</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- FASE 0 -->
+            <tr data-tags="F0 OBJ-A">
+              <td>FASE 0</td><td>Búsqueda y selección de literatura (PRISMA)</td>
+              <td class="gantt-cell"><div class="bar" style="left:2%;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F0 OBJ-A">
+              <td>FASE 0</td><td>Extracción de datos y codificación</td>
+              <td class="gantt-cell"><div class="bar" style="left:2%;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F0 OBJ-A">
+              <td>FASE 0</td><td>Elaboración de mapa temático</td>
+              <td class="gantt-cell"><div class="bar" style="left:2%;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- OBJETIVO A -->
+            <tr data-tags="OBJ-A">
+              <td>OBJ-A</td><td>Análisis global y colombiano</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:20%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-A">
+              <td>OBJ-A</td><td>Informe de revisión sistemática</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:20%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- OBJETIVO B -->
+            <tr data-tags="OBJ-B">
+              <td>OBJ-B</td><td>Catalogación de herramientas IA</td>
+              <td class="gantt-cell"><div class="bar" style="left:2%;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-B">
+              <td>OBJ-B</td><td>Evaluación práctica en laboratorio</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:30%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-B">
+              <td>OBJ-B</td><td>Taller de validación con docentes</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:40%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-B">
+              <td>OBJ-B</td><td>Elaboración de guía de prompts</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:40%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- FASE I (Cuantitativo) -->
+            <tr data-tags="F1">
+              <td>FASE I</td><td>Diseño de instrumentos (encuestas, pre-test)</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:20%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F1">
+              <td>FASE I</td><td>Selección de muestra (exp/control)</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:40%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F1">
+              <td>FASE I</td><td>Aplicación de pre-test</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:30%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F1">
+              <td>FASE I</td><td>Intervención con IA guiada (grupo exp.)</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:10%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:60%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F1">
+              <td>FASE I</td><td>Aplicación de post-test</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:60%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F1">
+              <td>FASE I</td><td>Análisis estadístico de datos</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:10%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:50%;right:0"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- OBJ C -->
+            <tr data-tags="OBJ-C">
+              <td>OBJ-C</td><td>Codificación de evidencias literatura</td>
+              <td class="gantt-cell"><div class="bar" style="left:2%;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-C">
+              <td>OBJ-C</td><td>Encuestas sobre percepciones</td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:30%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:60%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-C">
+              <td>OBJ-C</td><td>Análisis cuantitativo de percepciones</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:10%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- FASE II (Cualitativo) -->
+            <tr data-tags="F2">
+              <td>FASE II</td><td>Diseño guías de entrevista y grupos focales</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:30%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F2">
+              <td>FASE II</td><td>Selección de instituciones (3–4 casos)</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:30%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F2">
+              <td>FASE II</td><td>Entrevistas a docentes y coordinadores</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F2">
+              <td>FASE II</td><td>Grupos focales con estudiantes</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F2">
+              <td>FASE II</td><td>Observación participante en aulas</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:60%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F2">
+              <td>FASE II</td><td>Análisis cualitativo (codificación temática)</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:20%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:50%;right:0"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F2 OBJ-C">
+              <td>OBJ-C</td><td>Elaboración matriz beneficios/riesgos</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:20%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:50%;right:0"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- OBJ D -->
+            <tr data-tags="OBJ-D">
+              <td>OBJ-D</td><td>Selección de países y casos comparables (PE, EC, CL)</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"><div class="bar" style="left:5%;right:30%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-D">
+              <td>OBJ-D</td><td>Recolección de datos secundarios</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"><div class="bar" style="left:5%;right:30%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-D">
+              <td>OBJ-D</td><td>Análisis comparativo cross-case</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:30%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:60%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-D">
+              <td>OBJ-D</td><td>Informe y mapa regional</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:10%;right:40%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- OBJ E -->
+            <tr data-tags="OBJ-E">
+              <td>OBJ-E</td><td>Evaluación de infraestructura institucional</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:0"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-E">
+              <td>OBJ-E</td><td>Checklist técnico-pedagógico</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:10%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:50%;right:0"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-E">
+              <td>OBJ-E</td><td>Taller con stakeholders (directivos)</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:30%;right:40%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-E">
+              <td>OBJ-E</td><td>Matriz de viabilidad</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"><div class="bar" style="left:5%;right:50%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- FASE III -->
+            <tr data-tags="F3">
+              <td>FASE III</td><td>Triangulación de datos (joint display)</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:30%;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:50%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="F3">
+              <td>FASE III</td><td>Integración mixta de resultados</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:40%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+
+            <!-- OBJ F y difusión -->
+            <tr data-tags="OBJ-F">
+              <td>OBJ-F</td><td>Consolidación de evidencia en recomendaciones</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:40%"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-F">
+              <td>OBJ-F</td><td>Redacción de Guía de implementación</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:55%;right:0"></div></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="OBJ-F">
+              <td>OBJ-F</td><td>Prototipo de curso piloto</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:35%"></div></td>
+            </tr>
+            <tr data-tags="Difusión">
+              <td>Productos/Difusión</td><td>Redacción de artículos científicos</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:30%;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:30%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:30%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:5%"></div></td>
+            </tr>
+            <tr data-tags="Difusión">
+              <td>Productos/Difusión</td><td>Capítulos de libro</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:20%;right:40%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:50%"></div></td>
+            </tr>
+            <tr data-tags="Difusión">
+              <td>Productos/Difusión</td><td>Talleres de capacitación docente</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:35%"></div></td>
+            </tr>
+            <tr data-tags="Difusión">
+              <td>Productos/Difusión</td><td>Pilotos institucionales</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:40%"></div></td>
+              <td class="gantt-cell"><div class="bar" style="left:0;right:35%"></div></td>
+            </tr>
+            <tr data-tags="Difusión">
+              <td>Productos/Difusión</td><td>Informe técnico final</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:5%;right:40%"></div></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+            </tr>
+            <tr data-tags="Difusión">
+              <td>Productos/Difusión</td><td>Seminario de difusión de resultados</td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td><td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"></td>
+              <td class="gantt-cell"><div class="bar" style="left:25%;right:45%"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tabla 6: Presupuesto -->
+    <section class="panel" id="t6">
+      <h2>Tabla 6 — Presupuesto del proyecto</h2>
+      <div class="content">
+        <div class="tools">
+          <input type="search" placeholder="Buscar (ej. 'encuestas', 'publicaciones')…" data-table="tbl6" />
+          <button class="btn" data-export="tbl6">⬇ Exportar CSV</button>
+          <div class="col-toggle" data-cols="tbl6"></div>
+        </div>
+        <table id="tbl6">
+          <thead>
+            <tr>
+              <th data-col="Actividad">Actividad</th>
+              <th data-col="Rubros">Rubros principales</th>
+              <th data-col="Presupuesto" class="right">Presupuesto estimado (COP)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Revisión bibliográfica y sistematización</td>
+              <td>Personal investigador, bases de datos académicas, software de análisis (NVivo, Zotero).</td>
+              <td class="right" data-money="6000000"></td>
+            </tr>
+            <tr>
+              <td>Aplicación de encuestas y análisis cuantitativo</td>
+              <td>Personal de campo, licencias de formularios en línea, software estadístico (SPSS o R).</td>
+              <td class="right" data-money="8000000"></td>
+            </tr>
+            <tr>
+              <td>Entrevistas y observación participante</td>
+              <td>Transcripción, grabación, transporte y refrigerios.</td>
+              <td class="right" data-money="5000000"></td>
+            </tr>
+            <tr>
+              <td>Talleres y validación con docentes</td>
+              <td>Materiales pedagógicos, alquiler de sala, logística.</td>
+              <td class="right" data-money="4000000"></td>
+            </tr>
+            <tr>
+              <td>Elaboración de informe y publicaciones</td>
+              <td>Diagramación, edición, traducción y revisión técnica.</td>
+              <td class="right" data-money="3000000"></td>
+            </tr>
+            <tr>
+              <td>Difusión, eventos y pilotaje institucional</td>
+              <td>Viajes, presentación en congresos, informes finales.</td>
+              <td class="right" data-money="4000000"></td>
+            </tr>
+            <tr>
+              <td class="right sum" colspan="2">Total estimado</td>
+              <td class="right sum" id="totalPres"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+<script>
+/* ===== Utilidades comunes: buscar, ordenar, toggles de columnas, export CSV ===== */
+function formatCOP(n){
+  return n.toLocaleString('es-CO',{style:'currency', currency:'COP', maximumFractionDigits:0});
+}
+function setupMoney(){
+  document.querySelectorAll('[data-money]').forEach(td=>{
+    const v = Number(td.dataset.money||0);
+    td.textContent = formatCOP(v);
+  });
+  const total = [...document.querySelectorAll('#tbl6 [data-money]')]
+    .reduce((a,td)=> a + Number(td.dataset.money||0), 0);
+  document.getElementById('totalPres').textContent = formatCOP(total);
+}
+setupMoney();
+
+/* Buscar */
+document.querySelectorAll('input[type="search"][data-table]').forEach(inp=>{
+  inp.addEventListener('input', ()=>{
+    const q = inp.value.toLowerCase().trim();
+    const tbl = document.getElementById(inp.dataset.table);
+    [...tbl.tBodies[0].rows].forEach(tr=>{
+      tr.classList.remove('hide');
+      if(!q) return;
+      const hit = [...tr.cells].some(td=> td.textContent.toLowerCase().includes(q));
+      if(!hit) tr.classList.add('hide');
+    });
+  });
+});
+
+/* Ordenar */
+document.querySelectorAll('table thead th[data-col]').forEach(th=>{
+  th.addEventListener('click', ()=>{
+    const tbl = th.closest('table');
+    const idx = [...th.parentNode.children].indexOf(th);
+    const asc = !(th.dataset.asc === 'true');
+    th.dataset.asc = asc ? 'true' : 'false';
+    const rows = [...tbl.tBodies[0].rows].sort((a,b)=>{
+      const A = a.cells[idx].textContent.trim().toLowerCase();
+      const B = b.cells[idx].textContent.trim().toLowerCase();
+      if(!isNaN(+A) && !isNaN(+B)) return asc ? (+A - +B) : (+B - +A);
+      return asc ? A.localeCompare(B) : B.localeCompare(A);
+    });
+    rows.forEach(r=> tbl.tBodies[0].appendChild(r));
+  });
+});
+
+/* Mostrar/ocultar columnas */
+function buildColToggles(tableId){
+  const tbl = document.getElementById(tableId);
+  const host = document.querySelector(`.col-toggle[data-cols="${tableId}"]`);
+  if(!tbl || !host) return;
+  [...tbl.tHead.rows[0].cells].forEach((th,i)=>{
+    const label = th.textContent.trim();
+    const b = document.createElement('button');
+    b.className='btn'; b.textContent = '👁 ' + label;
+    b.dataset.on = '1';
+    b.onclick = ()=>{
+      const on = b.dataset.on === '1';
+      b.dataset.on = on ? '0':'1';
+      b.style.opacity = on ? .6 : 1;
+      // toggle display for this column
+      [...tbl.rows].forEach(row=>{
+        if(row.cells[i]) row.cells[i].style.display = on ? 'none' : '';
+      });
+    };
+    host.appendChild(b);
+  });
+}
+['tbl1','tbl3','tbl4','tbl6'].forEach(buildColToggles);
+
+/* Export CSV */
+function tableToCSV(tbl){
+  const rows = [...tbl.rows].filter(r=> !r.classList.contains('hide'));
+  return rows.map(r=> [...r.cells].map(td=>{
+    const t = td.textContent.replace(/\s+/g,' ').trim();
+    return `"${t.replace(/"/g,'""')}"`;
+  }).join(',')).join('\n');
+}
+document.querySelectorAll('[data-export]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const id = btn.dataset.export;
+    const tbl = document.getElementById(id);
+    const csv = tableToCSV(tbl);
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = id + '.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+});
+
+/* ===== Cronograma: filtros por chips ===== */
+document.querySelectorAll('#t5 .chip').forEach(ch=>{
+  ch.addEventListener('click', ()=>{
+    ch.classList.toggle('active');
+    const actives = [...document.querySelectorAll('#t5 .chip.active')].map(c=> c.dataset.phase);
+    const rows = document.querySelectorAll('#tbl5 tbody tr');
+    rows.forEach(r=>{
+      r.classList.remove('hide');
+      if(actives.length){
+        const tags = (r.dataset.tags||'').split(/\s+/);
+        const ok = actives.some(a=> tags.includes(a));
+        if(!ok) r.classList.add('hide');
+      }
+    });
+  });
+});
+
+/* ===== Accesibilidad mínima ===== */
+document.querySelectorAll('table').forEach(tbl=>{
+  tbl.setAttribute('role','table');
+  tbl.querySelector('thead')?.setAttribute('role','rowgroup');
+  tbl.querySelector('tbody')?.setAttribute('role','rowgroup');
+});
+
+/* ===== Responsive mejoras ===== */
+function compactOnMobile(){
+  if(innerWidth<760){
+    document.querySelectorAll('#tbl1 td:nth-child(3), #tbl1 th:nth-child(3)').forEach(e=> e.style.display='none');
+  }
+}
+compactOnMobile();
+addEventListener('resize', compactOnMobile);
+</script>
+</body>
+</html>

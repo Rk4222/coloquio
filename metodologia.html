@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Metodología — Fundamentos de Programación</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root{
+      --bg:#0a0f14; --bg2:#0e1521; --card:#121a26;
+      --fg:#e6f3ff; --muted:#a7b4c6;
+      --primary:#7dd3fc; --accent:#a78bfa; --ok:#34d399; --warn:#fbbf24; --err:#ff6961;
+      --border:rgba(255,255,255,.14); --glass:rgba(255,255,255,.06);
+      --shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(124,58,237,.25);
+    }
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg:#f6f9ff; --bg2:#eef4ff; --card:#ffffff; --fg:#0d1320; --muted:#576176;
+        --border:rgba(0,0,0,.12); --glass:rgba(0,0,0,.04);
+        --shadow: 0 10px 30px rgba(0,0,0,.08), 0 0 24px rgba(124,58,237,.12);
+      }
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; color:var(--fg);
+      background:
+        radial-gradient(1200px 600px at 8% 8%, var(--bg2) 0%, transparent 60%),
+        radial-gradient(1000px 500px at 92% 92%, var(--bg2) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg) 0%, #0a0e16 100%);
+      font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+    }
+    .wrap{max-width:1200px; margin:0 auto; padding:20px; display:grid; gap:14px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .brand{display:flex; align-items:center; gap:10px}
+    .badge{border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:12px; color:var(--primary)}
+    .sub{color:var(--muted); font-size:.95rem}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .btn{border:1px solid var(--border); background:var(--glass); color:var(--fg); padding:8px 12px; border-radius:10px; cursor:pointer; transition:.15s; user-select:none}
+    .btn:hover{border-color:rgba(255,255,255,.32)}
+    .btn.ok{border-color:rgba(52,211,153,.35)}
+    .btn.ghost{background:transparent}
+    .grid{display:grid; grid-template-columns: 1fr .9fr; gap:16px}
+    @media (max-width: 980px){ .grid{grid-template-columns: 1fr} }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid var(--border); border-radius:16px; box-shadow: var(--shadow); overflow:hidden;
+    }
+    .card h2{margin:0; padding:14px 16px; border-bottom:1px solid var(--border); font-size:1.05rem}
+    .card .content{padding:14px 16px}
+    .muted{color:var(--muted)}
+    .hint{font-size:.92rem}
+    .pill{display:inline-block; border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:999px; margin:0 6px 6px 0; cursor:pointer}
+    .pill:hover{border-color:rgba(255,255,255,.35)}
+
+    /* Tabs */
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; padding:10px 12px; border-bottom:1px solid var(--border)}
+    .tab{border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:10px; cursor:pointer}
+    .tab.active{outline:2px solid var(--accent);}
+
+    .section{display:none}
+    .section.active{display:block}
+
+    /* Timeline */
+    .timeline{display:grid; gap:10px}
+    .titem{border:1px dashed var(--border); border-radius:12px; padding:10px}
+    .barwrap{height:8px; background:var(--glass); border:1px solid var(--border); border-radius:999px; overflow:hidden}
+    .bar{height:100%; width:0%; background: linear-gradient(90deg, var(--primary), var(--accent))}
+
+    /* Accordions */
+    .acc{border:1px solid var(--border); border-radius:12px; overflow:hidden}
+    .acc + .acc{margin-top:8px}
+    .acc h3{margin:0; padding:10px 12px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,.03)}
+    .acc .panel{display:none; padding:10px 12px; border-top:1px solid var(--border)}
+    .acc.open .panel{display:block}
+
+    /* Search highlight */
+    mark{background: linear-gradient(transparent 60%, rgba(167,139,250,.35) 60%)}
+
+    /* Quiz */
+    .q{display:grid; gap:10px}
+    .opt{display:flex; gap:8px; align-items:center; padding:10px; border:1px solid var(--border); border-radius:10px; cursor:pointer}
+    .opt.correct{border-color:rgba(52,211,153,.5)}
+    .opt.wrong{border-color:rgba(255,105,97,.6)}
+    .feedback{margin-top:8px; font-weight:600}
+    .feedback.ok{color:var(--ok)} .feedback.err{color:var(--err)}
+
+    input[type="text"], textarea{width:100%; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--glass); color:var(--fg); font:inherit}
+
+    .kbd{border:1px solid var(--border); background:var(--glass); padding:2px 6px; border-radius:6px; font-family: ui-monospace; font-size:.95rem}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="badge">Metodología</span>
+        <span class="sub">Diseño mixto secuencial explicativo · 2020–2025</span>
+      </div>
+      <div class="actions">
+        <button class="btn" onclick="history.back()">↩ Volver</button>
+        <button class="btn" id="toggleView">👁️ Vista: Texto</button>
+        <button class="btn" id="ttsBtn">🔊 Escuchar</button>
+        <button class="btn ghost" id="copyBtn">📋 Copiar claves</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- Columna principal -->
+      <section class="card">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="enfoque">1) Enfoque y Justificación</button>
+          <button class="tab" data-tab="diseno">2) Tipo de Estudio / Diseño</button>
+          <button class="tab" data-tab="unidad">3) Unidad de Análisis y Contexto</button>
+          <button class="tab" data-tab="preguntas">4) Preguntas de Investigación</button>
+          <button class="tab" data-tab="etica">5) Ética y Gestión de Datos</button>
+          <button class="tab" data-tab="objetivos">6) Objetivos A–F</button>
+        </div>
+
+        <div class="content">
+          <!-- Toggle resumen -->
+          <p class="muted hint">Tip: escribe en el buscador para resaltar coincidencias. Usa <span class="kbd">R</span> para alternar Resumen/Texto.</p>
+          <input id="search" type="text" placeholder="Buscar (ej. 'cuasi-experimental', 'PRISMA', 'Colombia', 'Copilot')">
+
+          <!-- Secciones -->
+          <article class="section active" id="sec-enfoque">
+            <h2>Enfoque mixto secuencial explicativo</h2>
+            <p id="enfoque-full">
+              Integra métodos <strong>cuantitativos</strong> y <strong>cualitativos</strong> de forma complementaria, siguiendo diseños empleados en estudios sobre IA en educación (p.ej., Denny 2024; Kazemitabaar 2023). La elección se justifica por la complejidad del fenómeno: combina métricas objetivas
+              (rendimiento académico; Terán 2023 reporta ≈61% de mejora en ejercicios correctos) y dimensiones subjetivas (percepciones y contextos). Permite <em>triangulación metodológica</em> (Phung 2023): lo cuantitativo responde al “qué”, lo cualitativo al “cómo” y “por qué”. Se adecua al contexto colombiano (Hurtado 2024) capturando tendencias generalizables y particularidades locales.
+            </p>
+            <ul id="enfoque-res" hidden>
+              <li>Mixto secuencial explicativo (cuanti → cuali).</li>
+              <li>Triangulación: “qué” (cuanti) + “cómo/por qué” (cuali).</li>
+              <li>Validez en Colombia: combina tendencias y particularidades.</li>
+            </ul>
+          </article>
+
+          <article class="section" id="sec-diseno">
+            <h2>Diseño mixto · Fase 1 (Cuanti) → Fase 2 (Cuali)</h2>
+            <div class="acc open">
+              <h3>Componente Cuantitativo (Fase 1) <span>▼</span></h3>
+              <div class="panel">
+                <ul>
+                  <li><strong>Tipo:</strong> Cuasi-experimental (grupos: Experimental con IA guiada vs. Control tradicional).</li>
+                  <li><strong>Mediciones:</strong> Pre-test / post-test de habilidades con instrumentos validados (Kazemitabaar 2023).</li>
+                  <li><strong>Variables:</strong> Rendimiento, autoeficacia, pensamiento computacional (Phung 2023; Mbunge 2024).</li>
+                </ul>
+              </div>
+            </div>
+            <div class="acc">
+              <h3>Componente Cualitativo (Fase 2) <span>▼</span></h3>
+              <div class="panel">
+                <ul>
+                  <li><strong>Tipo:</strong> Casos múltiples (3–4 IES colombianas; análisis cross-case).</li>
+                  <li><strong>Técnicas:</strong> Entrevistas, grupos focales, observación participante.</li>
+                </ul>
+              </div>
+            </div>
+
+            <h3 style="margin-top:14px">Secuencia temporal (9 meses)</h3>
+            <div class="timeline">
+              <div class="titem">
+                <strong>Meses 1–4:</strong> Fase cuantitativa
+                <div class="barwrap"><div class="bar" style="width:44%"></div></div>
+              </div>
+              <div class="titem">
+                <strong>Meses 5–7:</strong> Fase cualitativa
+                <div class="barwrap"><div class="bar" style="width:33%"></div></div>
+              </div>
+              <div class="titem">
+                <strong>Meses 8–9:</strong> Integración mixta
+                <div class="barwrap"><div class="bar" style="width:22%"></div></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="section" id="sec-unidad">
+            <h2>Unidades de Análisis y Contexto</h2>
+            <div class="acc open">
+              <h3>Nivel individual <span>▼</span></h3>
+              <div class="panel">
+                <ul>
+                  <li>Estudiantes de Fundamentos (ej. Terán 2023).</li>
+                  <li>Docentes de programación básica.</li>
+                  <li>Coordinadores académicos / decisores.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="acc">
+              <h3>Nivel grupal/institucional <span>▼</span></h3>
+              <div class="panel">
+                <ul>
+                  <li>Grupos usando IA generativa / pares.</li>
+                  <li>Programas con cursos de programación.</li>
+                  <li>Departamentos de computación.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="acc">
+              <h3>Contexto y herramientas <span>▼</span></h3>
+              <div class="panel">
+                <ul>
+                  <li><strong>Ámbito:</strong> IES en Colombia (Caribe, Andina, Pacífico).</li>
+                  <li><strong>IA:</strong> ChatGPT 3.5/4.0, GitHub Copilot, chatbots institucionales, asistentes de programación.</li>
+                  <li><strong>Cursos:</strong> Fundamentos, Introducción, Algoritmia.</li>
+                  <li><strong>Periodo:</strong> 2020–2025 (post-pandemia).</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="section" id="sec-preguntas">
+            <h2>Preguntas de Investigación</h2>
+            <ul id="preg-full">
+              <li><strong>General:</strong> Factibilidad de implementar IA generativa en fundamentos en IES colombianas (2020–2025).</li>
+              <li><strong>Específicas:</strong>
+                <ul>
+                  <li>Impacto académico (rendimiento, pensamiento computacional).</li>
+                  <li>Percepciones y adopción (estudiantes y docentes).</li>
+                  <li>Implementación institucional (condiciones y estrategias).</li>
+                  <li>Ética y responsabilidad (desafíos y mitigación).</li>
+                </ul>
+              </li>
+            </ul>
+            <ul id="preg-res" hidden>
+              <li>¿Es factible la IA generativa en fundamentos (IES Colombia)?</li>
+              <li>Impacto, percepciones, condiciones institucionales, ética.</li>
+            </ul>
+          </article>
+
+          <article class="section" id="sec-etica">
+            <h2>Consideraciones Éticas y Gestión de Datos</h2>
+            <div class="acc open">
+              <h3>Consentimiento informado <span>▼</span></h3>
+              <div class="panel">
+                Protocolos con objetivos, procedimientos, riesgos/beneficios y retiro libre.
+              </div>
+            </div>
+            <div class="acc">
+              <h3>Protección de identidad <span>▼</span></h3>
+              <div class="panel">
+                Anonimización/pseudonimización, resguardo de identificadores, reporte agregado.
+              </div>
+            </div>
+            <div class="acc">
+              <h3>Gestión del ciclo de datos <span>▼</span></h3>
+              <div class="panel">
+                <ul>
+                  <li><strong>Fuentes:</strong> encuestas, tests, entrevistas, observación.</li>
+                  <li><strong>Almacenamiento:</strong> cifrado, control de acceso, backups.</li>
+                  <li><strong>Retención:</strong> según normativa institucional.</li>
+                </ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="section" id="sec-objetivos">
+            <h2>Objetivos A–F (fases y entregables)</h2>
+
+            <!-- Objetivo A -->
+            <div class="acc open">
+              <h3>Objetivo A — Estado del uso (2020–2025) <span>▼</span></h3>
+              <div class="panel">
+                <strong>Fase 0 (Mes 0–1):</strong> Revisión sistemática — PRISMA, matriz extracción. Indicadores: n° estudios, % región.<br/>
+                <strong>Fase I (Mes 1–4):</strong> Encuestas aulas piloto (exp vs. control). Indicadores: % uso, frecuencia, satisfacción.<br/>
+                <strong>Fase II (Mes 5–7):</strong> Entrevistas/observación. Categorías: capacitación, ética, infraestructura.<br/>
+                <strong>Fase III (Mes 8–9):</strong> Joint display y capítulo final.
+              </div>
+            </div>
+
+            <!-- Objetivo B -->
+            <div class="acc">
+              <h3>Objetivo B — Modelos, herramientas y métodos <span>▼</span></h3>
+              <div class="panel">
+                <strong>Fase 0 (0–1):</strong> Catálogo (LLMs, Copilot, chatbots, generadores).<br/>
+                <strong>Fase I (2–3):</strong> Pruebas de ejercicios (generación, debugging, explicación) con rúbrica.<br/>
+                <strong>Fase II (5):</strong> Taller de validación docente → guía de prompts.
+              </div>
+            </div>
+
+            <!-- Objetivo C -->
+            <div class="acc">
+              <h3>Objetivo C — Beneficios, limitaciones y riesgos <span>▼</span></h3>
+              <div class="panel">
+                <strong>Fase 0 (0–1):</strong> Codificación temática de evidencias.<br/>
+                <strong>Fase I (1–4):</strong> Encuestas de percepciones (mejora, errores, ética).<br/>
+                <strong>Fase II (5–7):</strong> Entrevistas sobre causas → matriz beneficios vs. riesgos.
+              </div>
+            </div>
+
+            <!-- Objetivo D -->
+            <div class="acc">
+              <h3>Objetivo D — Comparación regional (PE, EC, CL) <span>▼</span></h3>
+              <div class="panel">
+                <strong>Fase 0 (0–1):</strong> Selección de países comparables.<br/>
+                <strong>Fase I (1–2):</strong> Datos secundarios (informes nacionales/universitarios).<br/>
+                <strong>Fase II (3–4):</strong> Análisis comparativo (adopción, rendimiento, políticas).
+              </div>
+            </div>
+
+            <!-- Objetivo E -->
+            <div class="acc">
+              <h3>Objetivo E — Factibilidad en Colombia <span>▼</span></h3>
+              <div class="panel">
+                <strong>Fase I (4–6):</strong> Infraestructura, formación docente, aceptación (checklist).<br/>
+                <strong>Fase II (7–8):</strong> Taller con stakeholders → matriz de viabilidad y escenarios.
+              </div>
+            </div>
+
+            <!-- Objetivo F -->
+            <div class="acc">
+              <h3>Objetivo F — Lineamientos y pilotaje <span>▼</span></h3>
+              <div class="panel">
+                <strong>Fase I (8–9):</strong> Integración de evidencia → recomendaciones.<br/>
+                <strong>Fase II (9–10):</strong> Redacción de Guía de Implementación (IES Colombia).<br/>
+                <strong>Fase III (10–12):</strong> Difusión y pilotos; indicadores de adopción y rendimiento.
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Columna lateral -->
+      <aside class="card">
+        <h2 style="margin:0; padding:14px 16px; border-bottom:1px solid var(--border)">Acciones rápidas</h2>
+        <div class="content" style="display:grid; gap:10px">
+          <div>
+            <div class="muted">Navegación</div>
+            <div id="chips" style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap"></div>
+          </div>
+
+          <div>
+            <div class="muted">Atajos</div>
+            <div class="pill">R = Resumen</div>
+            <div class="pill">/ = Buscar</div>
+            <div class="pill">M = Marcar leído</div>
+          </div>
+
+          <button class="btn ok" id="markDone">✔ Marcar como leído</button>
+          <p class="muted" id="readState"></p>
+
+          <hr style="border:none; border-top:1px solid var(--border)" />
+
+          <h3 style="margin:.2rem 0">Mini-quiz</h3>
+          <div class="q">
+            <label class="opt"><input type="radio" name="q1" value="a" /> Mixto secuencial: primero cualitativo luego cuantitativo.</label>
+            <label class="opt"><input type="radio" name="q1" value="b" /> Mixto secuencial explicativo: primero cuantitativo, luego cualitativo.</label>
+            <div class="feedback" id="f1"></div>
+
+            <label class="opt"><input type="radio" name="q2" value="a" /> Un diseño cuasi-experimental no requiere grupos comparables.</label>
+            <label class="opt"><input type="radio" name="q2" value="b" /> En el cuasi-experimental se usan grupos exp. y control con mediciones pre/post.</label>
+            <div class="feedback" id="f2"></div>
+
+            <button class="btn" id="checkQuiz">Revisar</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Línea de tiempo general -->
+      <section class="card" style="grid-column: 1 / -1">
+        <h2 style="margin:0; padding:14px 16px; border-bottom:1px solid var(--border)">Cronograma 12 meses</h2>
+        <div class="content">
+          <div class="timeline">
+            <div class="titem"><strong>0–1:</strong> Revisión sistemática + catálogo herramientas<div class="barwrap"><div class="bar" style="width:8%"></div></div></div>
+            <div class="titem"><strong>1–4:</strong> Cuantitativo (encuestas, pre/post, análisis) <div class="barwrap"><div class="bar" style="width:33%"></div></div></div>
+            <div class="titem"><strong>2–3:</strong> Lab herramientas (pruebas, rúbricas) <div class="barwrap"><div class="bar" style="width:16%"></div></div></div>
+            <div class="titem"><strong>5–7:</strong> Cualitativo (entrevistas, grupos, observación) <div class="barwrap"><div class="bar" style="width:25%"></div></div></div>
+            <div class="titem"><strong>8–9:</strong> Integración mixta + recomendaciones <div class="barwrap"><div class="bar" style="width:16%"></div></div></div>
+            <div class="titem"><strong>9–12:</strong> Guía, difusión y pilotos <div class="barwrap"><div class="bar" style="width:25%"></div></div></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ----- Tabs -----
+    const tabs = document.querySelectorAll('.tab');
+    const sections = {
+      enfoque: document.getElementById('sec-enfoque'),
+      diseno: document.getElementById('sec-diseno'),
+      unidad: document.getElementById('sec-unidad'),
+      preguntas: document.getElementById('sec-preguntas'),
+      etica: document.getElementById('sec-etica'),
+      objetivos: document.getElementById('sec-objetivos'),
+    };
+    tabs.forEach(t=>{
+      t.addEventListener('click', ()=>{
+        tabs.forEach(x=> x.classList.remove('active'));
+        t.classList.add('active');
+        Object.values(sections).forEach(s=> s.classList.remove('active'));
+        sections[t.dataset.tab].classList.add('active');
+        window.scrollTo({top:0, behavior:'smooth'});
+      });
+    });
+
+    // ----- Resumen/Texto toggles -----
+    const toggleBtn = document.getElementById('toggleView');
+    const enfoqueFull = document.getElementById('enfoque-full');
+    const enfoqueRes = document.getElementById('enfoque-res');
+    const pregFull = document.getElementById('preg-full');
+    const pregRes = document.getElementById('preg-res');
+
+    function toggleView(){
+      const toSimple = enfoqueRes.hidden; // si está oculto → pasar a resumen
+      enfoqueRes.hidden = !toSimple;
+      enfoqueFull.hidden = toSimple;
+      pregRes.hidden = !toSimple;
+      pregFull.hidden = toSimple;
+      toggleBtn.textContent = toSimple ? '👁️ Vista: Resumen' : '👁️ Vista: Texto';
+    }
+    toggleBtn.addEventListener('click', toggleView);
+
+    // ----- Accordions -----
+    document.querySelectorAll('.acc h3').forEach(h=>{
+      h.addEventListener('click', ()=> h.parentElement.classList.toggle('open'));
+    });
+
+    // ----- Chips navegación -----
+    const chips = document.getElementById('chips');
+    ['enfoque','diseno','unidad','preguntas','etica','objetivos'].forEach(key=>{
+      const b = document.createElement('div');
+      b.className='pill'; b.textContent = key;
+      b.onclick = ()=> {
+        document.querySelector(`.tab[data-tab="${key}"]`).click();
+      };
+      chips.appendChild(b);
+    });
+
+    // ----- Buscar y resaltar -----
+    const search = document.getElementById('search');
+    search.addEventListener('input', ()=>{
+      clearMarks();
+      const q = search.value.trim();
+      if(!q) return;
+      highlight(document.querySelector('.section.active'), q);
+    });
+    function clearMarks(){
+      document.querySelectorAll('mark').forEach(m=>{
+        const p = m.parentNode; p.replaceChild(document.createTextNode(m.textContent), m); p.normalize();
+      });
+    }
+    function highlight(root, term){
+      const walk = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      const re = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      const nodes = [];
+      while(walk.nextNode()) nodes.push(walk.currentNode);
+      nodes.forEach(n=>{
+        if(!n.nodeValue.trim()) return;
+        const frag = document.createDocumentFragment();
+        let last = 0, m;
+        const text = n.nodeValue;
+        while((m = re.exec(text))){
+          const pre = text.slice(last, m.index);
+          if(pre) frag.appendChild(document.createTextNode(pre));
+          const mk = document.createElement('mark'); mk.textContent = m[0];
+          frag.appendChild(mk);
+          last = m.index + m[0].length;
+        }
+        const post = text.slice(last);
+        if(post || frag.childNodes.length){
+          if(post) frag.appendChild(document.createTextNode(post));
+          n.parentNode.replaceChild(frag, n);
+        }
+      });
+    }
+
+    // ----- Estado leído -----
+    const markBtn = document.getElementById('markDone');
+    const readState = document.getElementById('readState');
+    const KEY = 'metodologia_read';
+    function updateRead(){
+      const v = localStorage.getItem(KEY);
+      readState.textContent = v ? `✔ Marcado como leído el ${new Date(+v).toLocaleString()}` : 'Aún no marcado como leído.';
+    }
+    updateRead();
+    markBtn.addEventListener('click', ()=>{ localStorage.setItem(KEY, Date.now().toString()); updateRead(); });
+
+    // ----- Copiar claves -----
+    document.getElementById('copyBtn').addEventListener('click', async ()=>{
+      const txt = [
+        'Mixto secuencial explicativo: cuanti → cuali → integración.',
+        'Cuasi-experimental con pre/post; casos múltiples; 3–4 IES.',
+        'Contexto: IES Colombia 2020–2025; ChatGPT, Copilot, chatbots.',
+        'Preguntas: impacto, percepciones, implementación, ética.',
+        'Ética: consentimiento, anonimización, seguridad de datos.',
+        'Objetivos A–F: revisión, catálogo, pruebas, percepciones, comparación regional, factibilidad, guía y pilotos.'
+      ].join('\n');
+      try{ await navigator.clipboard.writeText(txt); toast('Claves copiadas ✅'); }
+      catch{ toast('No se pudo copiar 😅'); }
+    });
+
+    // ----- Quiz -----
+    const ans = { q1:'b', q2:'b' };
+    document.getElementById('checkQuiz').addEventListener('click', ()=>{
+      check('q1','f1'); check('q2','f2'); toast('Quiz revisado ✨');
+    });
+    function check(name, feedId){
+      const sel = document.querySelector(`input[name="${name}"]:checked`);
+      const feedback = document.getElementById(feedId);
+      document.querySelectorAll(`input[name="${name}"]`).forEach(r=> r.closest('.opt').classList.remove('correct','wrong'));
+      if(!sel){ feedback.textContent = 'Selecciona una opción.'; feedback.className='feedback err'; return; }
+      const ok = sel.value === ans[name];
+      feedback.textContent = ok ? '¡Correcto!' : 'Respuesta incorrecta';
+      feedback.className = 'feedback ' + (ok ? 'ok':'err');
+      sel.closest('.opt').classList.add(ok ? 'correct':'wrong');
+    }
+
+    // ----- TTS (lee un resumen corto de la metodología) -----
+    const ttsBtn = document.getElementById('ttsBtn');
+    ttsBtn.addEventListener('click', ()=>{
+      const u = new SpeechSynthesisUtterance(
+        'Metodología mixta secuencial explicativa: primero cuantitativo, luego cualitativo y finalmente integración. '+
+        'Cuasi experimental con pre y post pruebas, y casos múltiples en instituciones colombianas. '+
+        'Énfasis en ética, gestión de datos y producción de lineamientos y pilotos.'
+      );
+      u.lang = 'es-ES';
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    });
+
+    // ----- Toast util -----
+    function toast(msg){
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = 'position:fixed; bottom:16px; left:50%; transform:translateX(-50%); padding:8px 12px; border:1px solid var(--border); background:var(--glass); border-radius:10px; backdrop-filter:blur(6px); z-index:9999';
+      document.body.appendChild(t); setTimeout(()=> t.remove(), 1400);
+    }
+
+    // ----- Atajos de teclado -----
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'r' || e.key === 'R'){ toggleView(); }
+      if(e.key === '/'){ e.preventDefault(); document.getElementById('search').focus(); }
+      if(e.key === 'm' || e.key === 'M'){ localStorage.setItem(KEY, Date.now().toString()); updateRead(); toast('Marcado como leído'); }
+    });
+  </script>
+</body>
+</html>

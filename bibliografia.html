@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Créditos / Referencias — IA en Fundamentos</title>
+<meta name="color-scheme" content="dark light" />
+<style>
+  :root{
+    --bg:#0a0f14; --bg2:#0e1521; --card:#121a26;
+    --fg:#e6f3ff; --muted:#a7b4c6;
+    --primary:#7dd3fc; --accent:#a78bfa; --ok:#34d399; --warn:#fbbf24;
+    --border:rgba(255,255,255,.14); --glass:rgba(255,255,255,.06);
+    --shadow:0 10px 30px rgba(0,0,0,.35), 0 0 24px rgba(124,58,237,.25);
+    --speed: 45s; /* velocidad por defecto del scroll */
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f6f9ff; --bg2:#eef4ff; --card:#ffffff;
+      --fg:#0d1320; --muted:#576176; --border:rgba(0,0,0,.12); --glass:rgba(0,0,0,.04);
+      --shadow:0 10px 30px rgba(0,0,0,.08), 0 0 24px rgba(124,58,237,.12);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--fg);
+    background:
+      radial-gradient(1200px 600px at 8% 8%, var(--bg2) 0%, transparent 60%),
+      radial-gradient(1000px 500px at 92% 92%, var(--bg2) 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg) 0%, #0a0e16 100%);
+    font: 16px/1.6 ui-sans-serif, system-ui, Segoe UI, Inter, Roboto, Arial;
+    overflow:hidden; /* efecto cine */
+  }
+  .wrap{height:100%; display:grid; grid-template-rows:auto 1fr auto}
+  header, footer{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px;
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border-bottom:1px solid var(--border);
+  }
+  footer{ border-top:1px solid var(--border); border-bottom:none; }
+  .brand{display:flex; align-items:center; gap:10px}
+  .badge{border:1px solid var(--border); background:var(--glass); padding:6px 10px; border-radius:12px; color:var(--primary)}
+  .sub{color:var(--muted); font-size:.95rem}
+
+  .controls{display:flex; gap:8px; flex-wrap:wrap}
+  .btn, select{
+    border:1px solid var(--border); background:var(--glass); color:var(--fg);
+    padding:8px 12px; border-radius:10px; cursor:pointer; transition:.15s; user-select:none; font:inherit
+  }
+  .btn:hover{border-color:rgba(255,255,255,.32)}
+  select{padding:7px 10px}
+
+  /* Ventana de créditos */
+  .viewport{
+    position:relative; overflow:hidden; height:100%;
+    perspective: 800px; /* ligero efecto 3D */
+  }
+  .credits{
+    position:absolute; left:50%; transform:translateX(-50%) rotateX(8deg); /* Star Wars-ish suave */
+    width:min(1000px, 92vw);
+    padding:40px 16px 80px;
+    animation: scroll var(--speed) linear infinite;
+    filter: drop-shadow(0 12px 30px rgba(0,0,0,.35));
+  }
+  @keyframes scroll{
+    0%{ top:100%}
+    100%{ top:-140%}
+  }
+  .panel{
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+    border:1px solid var(--border); border-radius:16px; box-shadow:var(--shadow);
+    padding:18px 16px;
+  }
+  .title{
+    text-align:center; letter-spacing:.06em; margin:0 0 12px; font-weight:800; font-size:1.1rem;
+    color:var(--accent)
+  }
+  .ref{ padding:10px 0; border-bottom:1px dashed var(--border); white-space:pre-wrap }
+  .ref:last-child{ border-bottom:none }
+  a{color:var(--primary); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .muted{color:var(--muted)}
+
+  /* Modo enfoque (oscurece alrededor) */
+  .focus-on .viewport::after{
+    content:""; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 60%, transparent 20%, rgba(0,0,0,.45) 70%);
+    pointer-events:none; transition:.25s;
+  }
+
+  /* Estado pausado visual */
+  .paused .credits{ animation-play-state: paused }
+  .paused .btn[data-act="pause"]{ outline:2px solid var(--warn) }
+
+  /* Responsive */
+  @media (max-width:680px){
+    .credits{ width:92vw; transform:translateX(-50%) rotateX(6deg) }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <span class="badge">Referencias</span>
+        <span class="sub">coloquio </span>
+      </div>
+      <div class="controls">
+        <button class="btn" data-act="pause">⏯ Pausar/Reanudar</button>
+        <label class="muted" for="vel">Velocidad:</label>
+        <select id="vel" title="Velocidad de scroll">
+          <option value="60">Lenta</option>
+          <option value="45" selected>Normal</option>
+          <option value="30">Rápida</option>
+          <option value="20">Muy rápida</option>
+        </select>
+        <button class="btn" data-act="focus"> Modo enfoque</button>
+        <button class="btn" data-act="top">⤴ Volver arriba</button>
+      </div>
+    </header>
+
+    <div class="viewport" id="vp">
+      <div class="credits" id="roll">
+        <div class="panel">
+          <h2 class="title">REFERENCIAS</h2>
+
+          <!-- ⚠️ Texto EXACTO tal como lo enviaste (sin cambios) ⚠️ -->
+          <div class="ref">Bandura, A. (1997). Self-efficacy: The exercise of control. W. H. Freeman.</div>
+          <div class="ref">Borrego, M., Fernández, C., González, M., & López, J. (2023). AI in the classroom: Exploring students' interaction with ChatGPT in programming learning. Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems, 1-15. https://doi.org/10.1145/3544548.358089</div>
+          <div class="ref">Denny, P., Kumar, V., & Giacaman, N. (2024). Teaching programming in the age of ChatGPT. Proceedings of the 55th ACM Technical Symposium on Computer Science Education, *1*, 1213-1219. https://doi.org/10.1145/3626252.3630909</div>
+          <div class="ref">Finnie-Ansley, J., Denny, P., Becker, B. A., Luxton-Reilly, A., & Prather, J. (2022). The robots are coming: Exploring the implications of OpenAI Codex on introductory programming. Proceedings of the 24th Australasian Computing Education Conference, 10-19. https://doi.org/10.1145/3511861.3511863</div>
+          <div class="ref">Hurtado, C., Bravo, J., & Cruz-Bohórquez, F. (2024). Impacto de los chatbots de IA en la enseñanza de programación. Revista Latinoamericana de Tecnología Educativa, *15*(2), 45-60. https://acofipapers.org/index.php/eiel/article/view/3720/2396</div>
+          <div class="ref">Hurtado Martínez, L., García Rodríguez, M., & Chará García, J. (2024). Implementación de un chatbot de IA para la enseñanza de Python en educación secundaria. Revista Colombiana de Innovación en Educación, *12*(1), 78-92.</div>
+          <div class="ref">Kazemitabaar, M., Chow, J., Ma, C. K. T., Ericson, B. J., Weintrop, D., & Grossman, T. (2023). Studying the effect of AI code generators on supporting novice learners in introductory programming. Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems, 1-13. https://doi.org/10.1145/3544548.3580919</div>
+          <div class="ref">Liffiton, M., Sheese, B., Savelka, J., & Denny, P. (2024). CodeHelp: Using large language models with guardrails for scalable support in programming classes. Proceedings of the 55th ACM Technical Symposium on Computer Science Education, *1*, 103-109. https://doi.org/10.1145/3626252.3630812</div>
+
+          <div class="ref"></div>
+          <div class="ref">Mbunge, E., Muchemwa, B., & Jiyane, S. (2024). Generative AI in programming education: A comparative analysis of student perceptions across African universities. Computers & Education, *210*, 104961. https://doi.org/10.1016/j.compedu.2023.104961</div>
+          <div class="ref">Phung, T., Cambronero, J., Gulwani, S., Kiesler, S., Le, H., Radnik, K., & Tiwari, A. (2023). Generative AI for programming education: Benchmarking ChatGPT, GPT-4, and human tutors. International Journal of Artificial Intelligence in Education. https://doi.org/10.1007/s40593-023-00351-4</div>
+          <div class="ref">Sarsa, S., Denny, P., Hellas, A., & Leinonen, J. (2022). Automatic generation of programming exercises and code explanations using large language models. Proceedings of the 2022 ACM Conference on International Computing Education Research, *1*, 27-43. https://doi.org/10.1145/3501385.3543957</div>
+          <div class="ref">Terán, M. (2023). Uso de ChatGPT en la enseñanza de programación: Experiencia en la Universidad Simón Bolívar. Revista Colombiana de Educación en Ingeniería, *12*(1), 78-92.</div>
+          <!-- ⚠️ Fin de texto exacto ⚠️ -->
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="muted">Tip: pasa el mouse por encima o presiona “⏯ Pausar” para detener el scroll.</div>
+    </footer>
+  </div>
+
+<script>
+  const roll = document.getElementById('roll');
+  const root = document.documentElement;
+  let paused = false;
+
+  // Pausar/Reanudar
+  document.querySelector('[data-act="pause"]').addEventListener('click', ()=>{
+    paused = !paused;
+    document.body.classList.toggle('paused', paused);
+  });
+
+  // También pausar al pasar el mouse por la zona de créditos
+  document.getElementById('vp').addEventListener('mouseenter', ()=>{ document.body.classList.add('paused'); });
+  document.getElementById('vp').addEventListener('mouseleave', ()=>{ if(!paused) document.body.classList.remove('paused'); });
+
+  // Velocidad
+  document.getElementById('vel').addEventListener('change', (e)=>{
+    const s = Number(e.target.value||45);
+    root.style.setProperty('--speed', s+'s');
+  });
+
+  // Modo enfoque
+  document.querySelector('[data-act="focus"]').addEventListener('click', ()=>{
+    document.body.classList.toggle('focus-on');
+  });
+
+  // Volver arriba (reinicia animación)
+  document.querySelector('[data-act="top"]').addEventListener('click', ()=>{
+    // hack para reiniciar keyframes
+    roll.style.animation = 'none';
+    void roll.offsetHeight; // reflow
+    roll.style.animation = '';
+  });
+</script>
+</body>
+</html>
